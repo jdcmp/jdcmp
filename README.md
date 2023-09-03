@@ -33,6 +33,9 @@ The following features are untested:
 
 ### Maven
 
+Check the [Releases page](https://github.com/jdcmp/jdcmp/releases) and replace
+`<version>0.1</version>` with an appropriate entry.
+
 **Quickstart**
 
 Add this to `<dependencies>` inside your POM (e.g. `pom.xml`):
