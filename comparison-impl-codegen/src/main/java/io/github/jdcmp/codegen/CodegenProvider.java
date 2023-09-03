@@ -208,7 +208,7 @@ public final class CodegenProvider implements ComparatorProvider {
 		Lookup lookup = getLookup(spec, customization);
 		EventHandler eventHandler = customization.getEventHandler();
 		Collection<AvailableClassDefiner> availableClassDefiners = customization.getClassDefiners();
-		ImplSpec.OptionalClassDefiners classDefiners = createOptionalClassDefiners(availableClassDefiners, spec);
+		ImplSpec.OptionalClassDefiners classDefiners = createOptionalClassDefiners(availableClassDefiners);
 		Collection<Instantiator> instantiators = Instantiators.create(customization.getInstantiators());
 		ImplSpec.ClassGeneratorConfig classGeneratorConfig = customization.getClassGeneratorConfig();
 
@@ -230,7 +230,7 @@ public final class CodegenProvider implements ComparatorProvider {
 		return lookup;
 	}
 
-	private ImplSpec.OptionalClassDefiners createOptionalClassDefiners(Collection<AvailableClassDefiner> availableClassDefiners, Spec<?, ?> spec) {
+	private ImplSpec.OptionalClassDefiners createOptionalClassDefiners(Collection<AvailableClassDefiner> availableClassDefiners) {
 		try {
 			return new ImplSpec.OptionalClassDefiners(
 					classDefiners.vmAnonymous(availableClassDefiners),

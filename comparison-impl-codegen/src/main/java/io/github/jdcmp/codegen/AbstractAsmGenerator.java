@@ -28,12 +28,11 @@ import static org.objectweb.asm.Opcodes.*;
 /**
  * Main area for bytecode generation.
  *
- * @param <T> Type whose instances can be compared
  * @param <C> Type of the generated comparator
  * @param <U> Type of the user spec
  */
 @NotThreadSafe
-abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
+abstract class AbstractAsmGenerator<C, U extends Spec<?, ?>> {
 
 	protected final U userSpec;
 
@@ -44,10 +43,6 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 	protected Consts consts;
 
 	protected AbstractAsmGenerator(U userSpec, ImplSpec implSpec) {
-		if (!validate(userSpec)) {
-			throw new IllegalArgumentException("Unsupported user specification");
-		}
-
 		this.userSpec = userSpec;
 		this.implSpec = Objects.requireNonNull(implSpec);
 		this.eventHandler = Objects.requireNonNull(implSpec.getEventHandler());
@@ -57,25 +52,15 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 
 	abstract protected int classNameSuffix();
 
-	abstract protected Class<?> classToCompare();
-
 	abstract protected Class<?> comparatorClass();
 
 	abstract protected Type specType();
 
-	abstract protected boolean validate(U userSpec);
-
-	abstract protected HashParameters hashParameters();
-
-	abstract protected Collection<?> getters();
-
-	abstract protected boolean strictTypes();
-
 	abstract protected Type getterType();
 
-	abstract protected void addCompatibleSerializationMethod(ClassWriter classWriter, ClassDescription classDescription);
+	abstract protected void addCompatibleSerializationMethod(ClassWriter cw, ClassDescription cd);
 
-	abstract protected void customize(ClassWriter classWriter, ClassDescription classDescription);
+	abstract protected void customize(ClassWriter cw, ClassDescription cd);
 
 	abstract protected Method getStaticInitializerBridgeMethod();
 
@@ -151,11 +136,11 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 	}
 
 	protected int getterCount() {
-		return getters().size();
+		return userSpec.getGetterCount();
 	}
 
 	protected boolean isSerializable() {
-		return Serializable.class.isAssignableFrom(comparatorClass());
+		return Serializable.class.isAssignableFrom(consts.comparatorClass);
 	}
 
 	protected static void insertNumber(MethodVisitor mv, int value) {
@@ -213,8 +198,8 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 				fieldInitializer.addSpec(userSpec);
 			}
 
-			fieldInitializer.addClassToCompare(classToCompare());
-			fieldInitializer.addGetters(getters());
+			fieldInitializer.addClassToCompare(userSpec.getClassToCompare());
+			fieldInitializer.addGetters(userSpec.getGetters());
 		}
 
 		public final byte[] generate() {
@@ -293,8 +278,8 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 			}
 
 			mv.visitInsn(DUP);
-			init.addClassToCompare(classToCompare());
-			init.addGetters(getters());
+			init.addClassToCompare(userSpec.getClassToCompare());
+			init.addGetters(userSpec.getGetters());
 		}
 
 		private void addConstructorIfNecessary(ClassWriter cw) {
@@ -354,12 +339,12 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 		protected Class<C> specificDefineClass(byte[] bytes) {
 			Lookup host = implSpec.getLookup();
 			ClassDefinition classDefinition = new ClassDefinition(bytes, cd.generatedInternalName, host);
-			Object[] constantPoolPatches = createConstantPoolPatches(bytes);
+			Object[] constantPoolPatches = createConstantPoolPatches();
 
 			return classDefiner.defineClass(classDefinition, constantPoolPatches);
 		}
 
-		private Object[] createConstantPoolPatches(byte[] bytes) {
+		private Object[] createConstantPoolPatches() {
 			int cpi = constantPoolIndex;
 			Object[] constantPoolPatches = new Object[cpi + 1];
 			for (int i = 0; i < getterCount(); ++i) {
@@ -405,18 +390,12 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 
 		static final Handle CLASS_DATA_HANDLE;
 
-		static final ConstantDynamic CLASS_DATA_CONSTANT_DYNAMIC;
-
-		static final String CLASS_DATA_DESCRIPTOR;
-
 		static {
 			try {
 				Method classData = MethodHandles.class.getDeclaredMethod("classData", Lookup.class, String.class, Class.class);
 				String owner = Type.getInternalName(MethodHandles.class);
 				String descriptor = Type.getMethodDescriptor(classData);
-				CLASS_DATA_DESCRIPTOR = descriptor;
 				CLASS_DATA_HANDLE = new Handle(H_INVOKESTATIC, owner, "classData", descriptor, false);
-				CLASS_DATA_CONSTANT_DYNAMIC = null;
 			} catch (Exception e) {
 				throw new ExceptionInInitializerError(e);
 			}
@@ -540,7 +519,7 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 
 		final int getterCount = getterCount();
 
-		final HashParameters hashParameters = hashParameters();
+		final HashParameters hashParameters = userSpec.getHashParameters();
 
 		final int hashMultiplier = hashParameters.multiplier();
 
@@ -572,7 +551,7 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 			for (int i = 0; i < getterCount; ++i) {
 				mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "getter" + i, getterDescriptor);
 
-				if (strictTypes() && i == 0) {
+				if (userSpec.useStrictTypes() && i == 0) {
 					mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "classToCompare", Consts.CLASS_DESCRIPTOR);
 					mv.visitVarInsn(ALOAD, 1);
 					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "cast", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
@@ -658,7 +637,7 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 			Label label0 = new Label();
 			mv.visitLabel(label0);
 
-			if (strictTypes()) {
+			if (userSpec.useStrictTypes()) {
 				mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "classToCompare", "Ljava/lang/Class;");
 				mv.visitInsn(DUP);
 				mv.visitVarInsn(ASTORE, 3);
@@ -682,7 +661,7 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 			mv.visitVarInsn(ALOAD, 1);
 			Label label3 = new Label();
 			mv.visitJumpInsn(IFNULL, label3);
-			if (strictTypes()) {
+			if (userSpec.useStrictTypes()) {
 				mv.visitVarInsn(ALOAD, 3);
 			} else {
 				mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "classToCompare", "Ljava/lang/Class;");
@@ -759,8 +738,6 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 
 	protected final class ClassDescription {
 
-		private final Class<?> classToCompare = classToCompare();
-
 		final String generatedInternalName = createInternalName();
 
 		final String generatedSignature = createSignature();
@@ -785,7 +762,7 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 		}
 
 		private String classToCompareName() {
-			return className(classToCompare);
+			return className(userSpec.getClassToCompare());
 		}
 
 		private String className(Class<?> clazz) {
@@ -960,10 +937,10 @@ abstract class AbstractAsmGenerator<T, C, U extends Spec<?, ?>> {
 
 		public final String specSignature;
 
-		Consts(AbstractAsmGenerator<?, ?, ?> generator) {
+		Consts(AbstractAsmGenerator<?, ?> generator) {
 			Class<?> comparatorClass = generator.comparatorClass();
 			String comparatorClassInternalName = Type.getInternalName(comparatorClass);
-			Class<?> classToCompare = generator.classToCompare();
+			Class<?> classToCompare = generator.userSpec.getClassToCompare();
 
 			this.interfaces = new String[] {comparatorClassInternalName};
 			this.classToCompareDescriptor = Type.getDescriptor(classToCompare);

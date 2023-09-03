@@ -28,7 +28,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -195,7 +194,7 @@ final class EqualityComparators {
 
 	@NotThreadSafe
 	private static final class AsmGenerator<T, C extends EqualityComparator<T>, G extends EqualityCriterion<T>>
-			extends AbstractAsmGenerator<T, C, BaseEqualityComparatorSpec<T, G>> {
+			extends AbstractAsmGenerator<C, BaseEqualityComparatorSpec<T, G>> {
 
 		private static final int MAX_SUPPORTED_GETTERS = 32;
 
@@ -270,11 +269,6 @@ final class EqualityComparators {
 		}
 
 		@Override
-		protected Class<?> classToCompare() {
-			return userSpec.getClassToCompare();
-		}
-
-		@Override
 		protected Type specType() {
 			return isSerializable() ? SPEC_SERIALIZABLE_TYPE : SPEC_NONSERIALIZABLE_TYPE;
 		}
@@ -282,21 +276,6 @@ final class EqualityComparators {
 		@Override
 		protected Class<?> comparatorClass() {
 			return comparatorType;
-		}
-
-		@Override
-		protected boolean validate(BaseEqualityComparatorSpec<T, G> userSpec) {
-			return supports(userSpec);
-		}
-
-		@Override
-		protected HashParameters hashParameters() {
-			return userSpec.getHashParameters();
-		}
-
-		@Override
-		protected boolean strictTypes() {
-			return userSpec.useStrictTypes();
 		}
 
 		@Override
@@ -316,12 +295,7 @@ final class EqualityComparators {
 		}
 
 		@Override
-		protected void customize(ClassWriter classWriter, ClassDescription classDescription) {
-		}
-
-		@Override
-		protected Collection<?> getters() {
-			return userSpec.getGetters();
+		protected void customize(ClassWriter cw, ClassDescription cd) {
 		}
 
 		@Override
