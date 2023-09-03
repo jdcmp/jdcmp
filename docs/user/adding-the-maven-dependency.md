@@ -4,6 +4,8 @@ This document describes how to add this library to an existing Maven project.
 
 ## Without dependencyManagement
 
+Check the [Releases page](https://github.com/jdcmp/jdcmp/releases) and replace
+`<version>0.1</version>` with an appropriate entry.
 Place the `<dependency>` block inside `<dependencies>` of your POM (e.g. `pom.xml`).
 
 ```xml
@@ -17,6 +19,9 @@ Place the `<dependency>` block inside `<dependencies>` of your POM (e.g. `pom.xm
 ## With dependencyManagement
 
 **Step 1:** Use a property inside a top-level POM to define the version once.
+
+Check the [Releases page](https://github.com/jdcmp/jdcmp/releases) and replace
+`0.1` with an appropriate entry.
 
 ```xml
 <properties>
