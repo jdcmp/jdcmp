@@ -6,7 +6,7 @@
 
 	<groupId>io.github.jdcmp</groupId>
 	<artifactId>comparison</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.1.1</version>
 	<packaging>pom</packaging>
 
 	<name>jdcmp</name>
