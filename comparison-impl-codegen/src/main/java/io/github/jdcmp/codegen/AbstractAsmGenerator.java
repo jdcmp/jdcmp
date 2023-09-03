@@ -140,7 +140,7 @@ abstract class AbstractAsmGenerator<C, U extends Spec<?, ?>> {
 	}
 
 	protected boolean isSerializable() {
-		return Serializable.class.isAssignableFrom(consts.comparatorClass);
+		return Serializable.class.isAssignableFrom(comparatorClass());
 	}
 
 	protected static void insertNumber(MethodVisitor mv, int value) {
