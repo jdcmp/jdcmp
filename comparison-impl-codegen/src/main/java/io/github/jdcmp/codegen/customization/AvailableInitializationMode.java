@@ -31,7 +31,7 @@ public enum AvailableInitializationMode {
 	EXTERNAL {
 		@Override
 		public <T> T map(InitializationModeMapper<T> mapper) {
-			return mapper.onStaticInitializer();
+			return mapper.onExternal();
 		}
 	};
 

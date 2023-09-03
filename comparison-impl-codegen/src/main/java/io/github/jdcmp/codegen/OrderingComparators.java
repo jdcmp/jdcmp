@@ -1,6 +1,5 @@
 package io.github.jdcmp.codegen;
 
-import io.github.jdcmp.api.HashParameters;
 import io.github.jdcmp.api.MissingCriteriaException;
 import io.github.jdcmp.api.builder.ordering.OrderingFallbackMode;
 import io.github.jdcmp.api.builder.ordering.OrderingFallbackMode.FallbackMapper;
@@ -27,7 +26,6 @@ import org.objectweb.asm.Type;
 import java.io.ObjectStreamException;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -311,7 +309,8 @@ final class OrderingComparators {
 	}
 
 	@NotThreadSafe
-	private static final class AsmGenerator<T, C extends OrderingComparator<T>, G extends OrderingCriterion<? super T>> extends AbstractAsmGenerator<T, C, BaseOrderingComparatorSpec<T, G>> {
+	private static final class AsmGenerator<T, C extends OrderingComparator<T>, G extends OrderingCriterion<? super T>>
+			extends AbstractAsmGenerator<C, BaseOrderingComparatorSpec<T, G>> {
 
 		private static final int MAX_SUPPORTED_GETTERS = 32;
 
@@ -384,11 +383,6 @@ final class OrderingComparators {
 		}
 
 		@Override
-		protected Class<?> classToCompare() {
-			return userSpec.getClassToCompare();
-		}
-
-		@Override
 		protected Class<?> comparatorClass() {
 			return comparatorType;
 		}
@@ -396,21 +390,6 @@ final class OrderingComparators {
 		@Override
 		protected Type specType() {
 			return isSerializable() ? SPEC_SERIALIZABLE_TYPE : SPEC_NONSERIALIZABLE_TYPE;
-		}
-
-		@Override
-		protected boolean validate(BaseOrderingComparatorSpec<T, G> userSpec) {
-			return supports(userSpec);
-		}
-
-		@Override
-		protected HashParameters hashParameters() {
-			return userSpec.getHashParameters();
-		}
-
-		@Override
-		protected boolean strictTypes() {
-			return userSpec.useStrictTypes();
 		}
 
 		@Override
@@ -428,11 +407,6 @@ final class OrderingComparators {
 		@Override
 		protected void customize(ClassWriter cw, ClassDescription cd) {
 			addCompareMethod(cw, cd);
-		}
-
-		@Override
-		protected Collection<?> getters() {
-			return userSpec.getGetters();
 		}
 
 		@Override
@@ -469,7 +443,7 @@ final class OrderingComparators {
 				MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "compare", descriptor, descriptorTypeSafe, null);
 				mv.visitCode();
 
-				if (strictTypes()) {
+				if (userSpec.useStrictTypes()) {
 					mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "classToCompare", Consts.CLASS_DESCRIPTOR);
 					mv.visitInsn(DUP);
 					mv.visitVarInsn(ALOAD, 1);

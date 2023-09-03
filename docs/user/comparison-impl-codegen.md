@@ -1,7 +1,7 @@
 # comparison-impl-codegen
 
-This document describes the concrete implementation `comparison-impl-codegen` and its details,
-which are not part of `comparison-api`.
+This document describes the concrete implementation `comparison-impl-codegen`, mainly details that
+are not part of the API project `comparison-api`.
 
 ## Serialization
 
@@ -53,6 +53,7 @@ provider.setGenerateBridgeMethods(false);
 ```java
 provider.setClassDefiners(null); // Restore defaults
 provider.setClassDefiners(AvailableClassDefiners.VM_ANONYMOUS);
+provider.setClassDefiners(AvailableClassDefiners.LOOKUP_HIDDEN_CLASS_DATA);
 provider.setClassDefiners(AvailableClassDefiners.LOOKUP_HIDDEN);
 provider.setClassDefiners(AvailableClassDefiners.LOOKUP);
 provider.setClassDefiners(AvailableClassDefiners.CLASS_LOADER);
@@ -113,7 +114,7 @@ provider.setEventHandler(new EventHandler() {
 ## Customization support matrix
 
 The following table contains combinations of customizations that are expected to work on the listed
-runtime. It may not be valid for all runtimes.
+runtime. This information may not be valid for all runtimes.
 
 | Java   | ClassDefiner            | Instantiators                          | Initialization               |
 |--------|-------------------------|----------------------------------------|------------------------------|

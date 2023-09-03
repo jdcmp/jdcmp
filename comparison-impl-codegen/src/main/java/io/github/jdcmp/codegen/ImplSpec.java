@@ -119,18 +119,6 @@ final class ImplSpec {
 			return Optional.ofNullable(lookupHiddenClassWithClassDataDefiner);
 		}
 
-		public Optional<LookupHiddenClassDefiner> getLookupHiddenClassDefiner() {
-			return Optional.ofNullable(lookupHiddenClassDefiner);
-		}
-
-		public Optional<LookupClassDefiner> getLookupClassDefiner() {
-			return Optional.ofNullable(lookupClassDefiner);
-		}
-
-		public Optional<ClassLoaderClassDefiner> getClassLoaderClassDefiner() {
-			return Optional.ofNullable(classLoaderClassDefiner);
-		}
-
 	}
 
 	@Immutable

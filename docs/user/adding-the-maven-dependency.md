@@ -2,6 +2,18 @@
 
 This document describes how to add this library to an existing Maven project.
 
+## Without dependencyManagement
+
+Place the `<dependency>` block inside `<dependencies>` of your POM (e.g. `pom.xml`).
+
+```xml
+<dependency>
+    <groupId>io.github.jdcmp</groupId>
+    <artifactId>comparison-impl-codegen</artifactId>
+    <version>0.1</version>
+</dependency>
+```
+
 ## With dependencyManagement
 
 **Step 1:** Use a property inside a top-level POM to define the version once.
@@ -18,14 +30,14 @@ This document describes how to add this library to an existing Maven project.
 ```xml
 <dependencyManagement>
     <dependency>
-      <groupId>io.github.jdcmp</groupId>
-      <artifactId>comparison-impl-codegen</artifactId>
-      <version>${jdcmp.version}</version>
+        <groupId>io.github.jdcmp</groupId>
+        <artifactId>comparison-impl-codegen</artifactId>
+        <version>${jdcmp.version}</version>
     </dependency>
 </dependencyManagement>
 ```
 
-**Step 3:** Place `<dependency>` inside `<dependencies>` of a child-level POM.
+**Step 3:** Place the `<dependency>` block inside `<dependencies>` of a child-level POM.
 
 ```xml
 <dependency>
@@ -97,3 +109,9 @@ This document describes how to add this library to an existing Maven project.
 
 </project>
 ```
+
+## Keeping up to date
+
+You may use the
+[versions-maven-plugin](https://www.mojohaus.org/versions/versions-maven-plugin/examples/display-dependency-updates.html)
+to check for updates.
