@@ -291,7 +291,7 @@ public final class CodegenProvider implements ComparatorProvider {
 			return Utils.or(this.classDefiners, DEFAULT_CLASS_DEFINERS);
 		}
 
-		private Set<AvailableInstantiator> getInstantiators() {
+		Set<AvailableInstantiator> getInstantiators() {
 			return Utils.or(this.instantiators, DEFAULT_INSTANTIATORS);
 		}
 
