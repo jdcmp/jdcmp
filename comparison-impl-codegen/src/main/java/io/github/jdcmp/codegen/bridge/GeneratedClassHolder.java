@@ -8,7 +8,6 @@ import java.lang.invoke.MethodHandles.Lookup;
 
 /**
  * "Holds" generated classes.
- *
  */
 @ThreadSafe
 public final class GeneratedClassHolder {
@@ -20,11 +19,21 @@ public final class GeneratedClassHolder {
 	 * @return A privileged lookup for {@link GeneratedClassHolder}
 	 */
 	public static Lookup lookup(Lookup caller) {
-		if (CodegenProvider.class != caller.lookupClass()) {
-			throw new IllegalArgumentException("Caller is not permitted to retrieve Lookup.");
-		}
+		checkAccess(caller);
 
 		return MethodHandles.lookup();
+	}
+
+	private static void checkAccess(Lookup caller) {
+		Class<?> lookupClass = caller.lookupClass();
+
+		if (CodegenProvider.class != lookupClass || lacksAccess(caller)) {
+			throw new IllegalArgumentException("Caller is not permitted to retrieve Lookup.");
+		}
+	}
+
+	private static boolean lacksAccess(Lookup caller) {
+		return (caller.lookupModes() & Lookup.PRIVATE) != Lookup.PRIVATE;
 	}
 
 	private GeneratedClassHolder() {
