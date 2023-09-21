@@ -9,6 +9,10 @@ import java.util.Objects;
 @ThreadSafe
 interface ClassDefiner {
 
+	boolean supportsExternalInitialization();
+
+	boolean producesVmAnonymousOrHiddenClasses();
+
 	<T> Class<T> defineClass(ClassDefinition classDefinition);
 
 	@Immutable
