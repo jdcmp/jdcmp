@@ -124,6 +124,22 @@ final class Utils {
 		return list;
 	}
 
+	@SafeVarargs
+	public static <T> List<T> arrayListOfNonNulls(@Nullable T... elements) {
+		if (elements == null) {
+			return Collections.emptyList();
+		}
+
+		ArrayList<T> list = new ArrayList<>(elements.length);
+		for (T element : elements) {
+			if (element != null) {
+				list.add(element);
+			}
+		}
+
+		return list;
+	}
+
 	public static void initializeClass(Class<?> clazz) {
 		ThrowableRunnable.run(() -> initializeClassChecked(clazz));
 	}
