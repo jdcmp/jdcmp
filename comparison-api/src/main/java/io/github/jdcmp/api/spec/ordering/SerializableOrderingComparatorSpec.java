@@ -9,7 +9,7 @@ import io.github.jdcmp.api.serialization.OrderingComparatorSerializedForm;
  *
  * @param <T> Type whose instances can be compared
  */
-public interface SerializableOrderingComparatorSpec<T> extends BaseOrderingComparatorSpec<T, SerializableOrderingCriterion<T>> {
+public interface SerializableOrderingComparatorSpec<T> extends BaseOrderingComparatorSpec<T, SerializableOrderingCriterion<? super T>> {
 
 	/**
 	 * Returns the spec's serialized form.

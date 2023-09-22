@@ -9,7 +9,7 @@ import io.github.jdcmp.api.serialization.EqualityComparatorSerializedForm;
  *
  * @param <T> Type whose instances can be compared
  */
-public interface SerializableEqualityComparatorSpec<T> extends BaseEqualityComparatorSpec<T, SerializableEqualityCriterion<T>> {
+public interface SerializableEqualityComparatorSpec<T> extends BaseEqualityComparatorSpec<T, SerializableEqualityCriterion<? super T>> {
 
 	/**
 	 * Returns the spec's serialized form.
