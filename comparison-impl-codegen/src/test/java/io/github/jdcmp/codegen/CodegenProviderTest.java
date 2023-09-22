@@ -34,7 +34,12 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 public class CodegenProviderTest {
 
@@ -733,6 +738,8 @@ public class CodegenProviderTest {
 
 			provider.setEventHandler(eventHandler);
 			createComparator();
+			Mockito.verify(eventHandler).onClassGenerated(Mockito.any(byte[].class));
+			Mockito.verify(eventHandler).onClassDefined(Mockito.any(Class.class), Mockito.any(byte[].class));
 			Mockito.verify(eventHandler).onClassInstantiated(Mockito.any(Class.class), Mockito.any(byte[].class));
 			Mockito.verifyNoMoreInteractions(eventHandler);
 

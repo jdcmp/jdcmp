@@ -41,7 +41,7 @@ final class Instantiators {
 		}
 	}
 
-	private static final class UnsafeInstantiator implements Instantiator {
+	static final class UnsafeInstantiator implements Instantiator {
 
 		UnsafeInstantiator() {
 			Utils.initializeClass(Holder.class);
@@ -53,7 +53,7 @@ final class Instantiators {
 		}
 
 		@Override
-		public boolean supportsVmAnonOrHiddenClasses() {
+		public boolean supports(ClassDefiner classDefiner) {
 			return true;
 		}
 
@@ -83,7 +83,7 @@ final class Instantiators {
 
 	}
 
-	private static final class ReflectionFactoryInstantiator implements Instantiator {
+	static final class ReflectionFactoryInstantiator implements Instantiator {
 
 		ReflectionFactoryInstantiator() {
 			Utils.initializeClass(Holder.class);
@@ -95,8 +95,8 @@ final class Instantiators {
 		}
 
 		@Override
-		public boolean supportsVmAnonOrHiddenClasses() {
-			return false;
+		public boolean supports(ClassDefiner classDefiner) {
+			return !classDefiner.producesVmAnonymousOrHiddenClasses();
 		}
 
 		@SuppressWarnings("unchecked")
@@ -137,7 +137,7 @@ final class Instantiators {
 
 	}
 
-	private static final class ReflectionFactoryConstructorInstantiator implements Instantiator {
+	static final class ReflectionFactoryConstructorInstantiator implements Instantiator {
 
 		ReflectionFactoryConstructorInstantiator() {
 			Utils.initializeClass(Holder.class);
@@ -149,8 +149,8 @@ final class Instantiators {
 		}
 
 		@Override
-		public boolean supportsVmAnonOrHiddenClasses() {
-			return false;
+		public boolean supports(ClassDefiner classDefiner) {
+			return !classDefiner.producesVmAnonymousOrHiddenClasses();
 		}
 
 		@SuppressWarnings("unchecked")
@@ -193,7 +193,7 @@ final class Instantiators {
 
 	}
 
-	private static final class ConstructorInstantiator implements Instantiator {
+	static final class ConstructorInstantiator implements Instantiator {
 
 		@Override
 		public boolean requiresConstructor() {
@@ -201,7 +201,7 @@ final class Instantiators {
 		}
 
 		@Override
-		public boolean supportsVmAnonOrHiddenClasses() {
+		public boolean supports(ClassDefiner classDefiner) {
 			return true;
 		}
 
