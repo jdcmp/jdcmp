@@ -17,12 +17,12 @@ jdcmp is an open-source library for Java™ that helps developers implement cons
 The following table lists runtimes that are known to be compatible with the default implementation 
 `comparison-impl-codegen`.  
 
-| Flavor              | Versions |
-|---------------------|----------|
-| Adoptium OpenJDK    | 8 - 22   |
-| IBM Semeru (OpenJ9) | 17 - 20  |
-| GraalVM CE          | 17, 20   |
-| Oracle GraalVM      | 17, 20   |
+| Flavor              | Versions   |
+|---------------------|------------|
+| OpenJDK             | 8 - 22     |
+| IBM Semeru (OpenJ9) | 17 - 20    |
+| GraalVM CE          | 17, 20, 21 |
+| Oracle GraalVM      | 17, 20, 21 |
 
 The following features are untested:
 
