@@ -2,13 +2,18 @@ package io.github.jdcmp.codegen.bridge;
 
 import io.github.jdcmp.api.documentation.ThreadSafe;
 import io.github.jdcmp.codegen.CodegenProvider;
+import io.github.jdcmp.codegen.documentation.NotPublicAPI;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 
 /**
  * "Holds" generated classes.
+ *
+ * <p>Despite being public (technical reasons), <strong>this class is not part of the public API</strong>, cannot be relied upon and
+ * should not be used directly.</p>
  */
+@NotPublicAPI(reason = "Technical reasons - If modules are used, the package must be opened")
 @ThreadSafe
 public final class GeneratedClassHolder {
 
