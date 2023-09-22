@@ -1,6 +1,13 @@
 package io.github.jdcmp.api;
 
-import io.github.jdcmp.api.builder.ordering.*;
+import io.github.jdcmp.api.builder.ordering.OrderingComparatorBuilder;
+import io.github.jdcmp.api.builder.ordering.OrderingFallbackMode;
+import io.github.jdcmp.api.builder.ordering.SerializableOrderingComparatorBuilder;
+import io.github.jdcmp.api.builder.ordering.StepMandatoryGetter;
+import io.github.jdcmp.api.builder.ordering.StepMandatorySerializableGetter;
+import io.github.jdcmp.api.builder.ordering.StepMissingCriteriaHandling;
+import io.github.jdcmp.api.builder.ordering.StepMissingCriteriaHandlingSerializable;
+import io.github.jdcmp.api.builder.ordering.StepSerializationOrdering;
 import io.github.jdcmp.api.comparator.ordering.NullHandling;
 import io.github.jdcmp.api.comparator.ordering.OrderingComparator;
 import io.github.jdcmp.api.comparator.ordering.SerializableOrderingComparator;

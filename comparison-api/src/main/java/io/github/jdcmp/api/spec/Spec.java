@@ -4,7 +4,11 @@ import io.github.jdcmp.api.HashParameters;
 import io.github.jdcmp.api.getter.EqualityCriterion;
 
 import java.lang.invoke.MethodHandles.Lookup;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Base type for comparator specifications.

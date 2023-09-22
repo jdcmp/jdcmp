@@ -1,16 +1,25 @@
 package io.github.jdcmp.codegen;
 
 import io.github.jdcmp.api.documentation.Immutable;
-import io.github.jdcmp.codegen.ClassDefiners.*;
+import io.github.jdcmp.codegen.ClassDefiners.ClassLoaderClassDefiner;
+import io.github.jdcmp.codegen.ClassDefiners.LookupClassDefiner;
+import io.github.jdcmp.codegen.ClassDefiners.LookupHiddenClassDefiner;
+import io.github.jdcmp.codegen.ClassDefiners.LookupHiddenClassWithClassDataDefiner;
+import io.github.jdcmp.codegen.ClassDefiners.VMAnonymousClassDefiner;
 import io.github.jdcmp.codegen.contract.EventHandler;
 import io.github.jdcmp.codegen.customization.AvailableInitializationMode;
 import io.github.jdcmp.codegen.customization.AvailableSerializationMode;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandles.Lookup;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
-@Immutable
+@Immutable // constructor dependencies are trusted to be immutable
 final class ImplSpec {
 
 	private final Lookup lookup;
@@ -27,12 +36,12 @@ final class ImplSpec {
 			Lookup lookup,
 			EventHandler eventHandler,
 			OptionalClassDefiners classDefiners,
-			Iterable<? extends Instantiator> instantiators,
+			List<? extends Instantiator> instantiators,
 			ClassGeneratorConfig classGeneratorConfig) {
 		this.lookup = Objects.requireNonNull(lookup);
 		this.eventHandler = Objects.requireNonNull(eventHandler);
 		this.classDefiners = Objects.requireNonNull(classDefiners);
-		this.instantiators = Utils.immutableArrayList(instantiators);
+		this.instantiators = Collections.unmodifiableList(instantiators);
 		this.classGenerationConfig = Objects.requireNonNull(classGeneratorConfig);
 	}
 
@@ -71,12 +80,6 @@ final class ImplSpec {
 
 		private final LookupHiddenClassWithClassDataDefiner lookupHiddenClassWithClassDataDefiner;
 
-		private final LookupHiddenClassDefiner lookupHiddenClassDefiner;
-
-		private final LookupClassDefiner lookupClassDefiner;
-
-		private final ClassLoaderClassDefiner classLoaderClassDefiner;
-
 		private final Set<ClassDefiner> all;
 
 		public OptionalClassDefiners(
@@ -87,9 +90,6 @@ final class ImplSpec {
 				@Nullable ClassLoaderClassDefiner classLoaderClassDefiner) throws IllegalArgumentException {
 			this.vmAnonymousClassDefiner = vmAnonymousClassDefiner;
 			this.lookupHiddenClassWithClassDataDefiner = lookupHiddenClassWithClassDataDefiner;
-			this.lookupHiddenClassDefiner = lookupHiddenClassDefiner;
-			this.lookupClassDefiner = lookupClassDefiner;
-			this.classLoaderClassDefiner = classLoaderClassDefiner;
 			LinkedHashSet<ClassDefiner> all = new LinkedHashSet<>(5);
 			add(all, vmAnonymousClassDefiner);
 			add(all, lookupHiddenClassWithClassDataDefiner);
