@@ -8,8 +8,7 @@ import java.lang.annotation.Target;
 /**
  * <p>Indicates that code, despite being public, is not part of the "public API", meaning it should not be used or otherwise
  * relied upon by outside internal development of the particular project. This may be the case if a type must be public for
- * technical reasons, yet provides no obvious functionality.
- * </p>
+ * technical reasons, yet provides no obvious functionality.</p>
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({

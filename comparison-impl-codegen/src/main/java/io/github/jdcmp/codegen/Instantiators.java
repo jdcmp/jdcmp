@@ -128,9 +128,9 @@ final class Instantiators {
 			static final MethodHandle NEW_CONSTRUCTOR_FOR_SERIALIZATION;
 
 			static {
-				MethodHandle newConstructorForSerialization = Internals.ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION.find();
-				Object reflectionFactory = Internals.ReflectionFactory.getInstance();
-				NEW_CONSTRUCTOR_FOR_SERIALIZATION = newConstructorForSerialization.bindTo(reflectionFactory);
+				NEW_CONSTRUCTOR_FOR_SERIALIZATION = Internals.ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION
+						.find()
+						.bindTo(Internals.ReflectionFactory.getInstance());
 			}
 
 		}
@@ -183,10 +183,9 @@ final class Instantiators {
 			static final MethodHandle NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR;
 
 			static {
-				Object reflectionFactory = Internals.ReflectionFactory.getInstance();
 				NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR = Internals.ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR
 						.find()
-						.bindTo(reflectionFactory);
+						.bindTo(Internals.ReflectionFactory.getInstance());
 			}
 
 		}
