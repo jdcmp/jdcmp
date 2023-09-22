@@ -1,6 +1,13 @@
 package io.github.jdcmp.api;
 
-import io.github.jdcmp.api.builder.equality.*;
+import io.github.jdcmp.api.builder.equality.EqualityComparatorBuilder;
+import io.github.jdcmp.api.builder.equality.EqualityFallbackMode;
+import io.github.jdcmp.api.builder.equality.SerializableEqualityComparatorBuilder;
+import io.github.jdcmp.api.builder.equality.StepMandatoryGetter;
+import io.github.jdcmp.api.builder.equality.StepMandatorySerializableGetter;
+import io.github.jdcmp.api.builder.equality.StepMissingCriteriaHandling;
+import io.github.jdcmp.api.builder.equality.StepMissingCriteriaHandlingSerializable;
+import io.github.jdcmp.api.builder.equality.StepSerializationEquality;
 import io.github.jdcmp.api.comparator.equality.EqualityComparator;
 import io.github.jdcmp.api.comparator.equality.SerializableEqualityComparator;
 import io.github.jdcmp.api.documentation.ThreadSafe;
@@ -170,7 +177,7 @@ final class EqualityComparators {
 			implements
 			SerializableEqualityComparatorBuilder<T> {
 
-		SerializableBuilder(Class<T> classToCompare, @Nullable  EqualityFallbackMode fallbackMode) {
+		SerializableBuilder(Class<T> classToCompare, @Nullable EqualityFallbackMode fallbackMode) {
 			super(classToCompare, fallbackMode);
 		}
 

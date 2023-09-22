@@ -1,6 +1,10 @@
 package io.github.jdcmp.api.builder.ordering;
 
-import io.github.jdcmp.api.builder.*;
+import io.github.jdcmp.api.builder.SharedBuildMethods;
+import io.github.jdcmp.api.builder.SharedCustomization;
+import io.github.jdcmp.api.builder.SharedGetter;
+import io.github.jdcmp.api.builder.SharedGetters;
+import io.github.jdcmp.api.builder.SharedNullHandling;
 import io.github.jdcmp.api.comparator.ordering.SerializableOrderingComparator;
 import io.github.jdcmp.api.getter.SerializableOrderingCriterion;
 
