@@ -6,6 +6,7 @@ import io.github.jdcmp.api.comparator.ordering.OrderingComparator;
 import io.github.jdcmp.api.comparator.ordering.SerializableOrderingComparator;
 import io.github.jdcmp.api.documentation.ThreadSafe;
 import io.github.jdcmp.api.provider.ComparatorProvider;
+import io.github.jdcmp.api.provider.ComparatorProviders;
 import io.github.jdcmp.api.spec.Spec;
 import io.github.jdcmp.api.spec.Specs;
 import io.github.jdcmp.api.spec.equality.EqualityComparatorSpec;
@@ -42,7 +43,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class is the ServiceProvider for <i>comparison-impl-codegen</i>.
+ * <p>This class is the ServiceProvider for <i>comparison-impl-codegen</i>, which is a concrete implementation of the abstract API
+ * <i>comparison-api</i>.</p>
+ *
+ * <p>Instances are usually obtained via {@link ComparatorProviders#load(Class)}. However, if customization of the {@link LookupFactory}
+ * is necessary, one of the {@link #of(LookupFactory)} or {@link #of(Lookup)} static factory methods may be used.</p>
  */
 @ThreadSafe
 @CarefulRefactoring(reason = "Public API")
@@ -236,30 +241,30 @@ public final class CodegenProvider implements ComparatorProvider {
 		return lookup;
 	}
 
-	private ImplSpec.OptionalClassDefiners createOptionalClassDefiners(Collection<AvailableClassDefiner> availableClassDefiners) {
+	private ImplSpec.OptionalClassDefiners createOptionalClassDefiners(Collection<AvailableClassDefiner> classDefiners) {
 		try {
 			return new ImplSpec.OptionalClassDefiners(
-					ClassDefinerHolder.vmAnonymous(availableClassDefiners),
-					ClassDefinerHolder.lookupHiddenClassWithClassDataDefiner(availableClassDefiners),
-					ClassDefinerHolder.lookupHiddenClassDefiner(availableClassDefiners),
-					ClassDefinerHolder.lookupClassDefiner(availableClassDefiners),
-					ClassDefinerHolder.classLoaderClassDefiner(availableClassDefiners)
+					ClassDefinerHolder.vmAnonymous(classDefiners),
+					ClassDefinerHolder.lookupHiddenClassWithClassDataDefiner(classDefiners),
+					ClassDefinerHolder.lookupHiddenClassDefiner(classDefiners),
+					ClassDefinerHolder.lookupClassDefiner(classDefiners),
+					ClassDefinerHolder.classLoaderClassDefiner(classDefiners)
 			);
 		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("None of the following ClassDefiners is available: " + availableClassDefiners, e);
+			throw new IllegalArgumentException("ClassDefiners are unavailable: " + classDefiners, e);
 		}
 	}
 
-	private List<Instantiator> createInstantiators(Collection<AvailableInstantiator> availableInstantiators) {
+	private List<Instantiator> createInstantiators(Collection<AvailableInstantiator> instantiators) {
 		try {
-			return Utils.arrayListOfNonNulls(
-					InstantiatorHolder.unsafe(availableInstantiators),
-					InstantiatorHolder.reflectionFactory(availableInstantiators),
-					InstantiatorHolder.reflectionFactoryConstructor(availableInstantiators),
-					InstantiatorHolder.constructor(availableInstantiators)
+			return Utils.nonEmptyArrayListOfNonNulls(
+					InstantiatorHolder.unsafe(instantiators),
+					InstantiatorHolder.reflectionFactory(instantiators),
+					InstantiatorHolder.reflectionFactoryConstructor(instantiators),
+					InstantiatorHolder.constructor(instantiators)
 			);
 		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("None of the following Instantiators is available: " + availableInstantiators, e);
+			throw new IllegalArgumentException("Instantiators are unavailable: " + instantiators, e);
 		}
 	}
 

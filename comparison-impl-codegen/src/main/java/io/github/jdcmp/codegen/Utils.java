@@ -121,7 +121,7 @@ final class Utils {
 		return Collections.unmodifiableList(arrayList(iterable));
 	}
 
-	public static <T> List<T> immutableArrayListNonEmpty(Iterable<? extends T> iterable) throws NullPointerException {
+	public static <T> List<T> immutableArrayListNonEmpty(Iterable<? extends T> iterable) throws NullPointerException, IllegalArgumentException {
 		List<T> list = immutableArrayList(iterable);
 
 		if (list.isEmpty()) {
@@ -132,7 +132,7 @@ final class Utils {
 	}
 
 	@SafeVarargs
-	public static <T> List<T> arrayListOfNonNulls(@Nullable T... elements) {
+	public static <T> List<T> nonEmptyArrayListOfNonNulls(@Nullable T... elements) throws IllegalArgumentException {
 		if (elements == null) {
 			return Collections.emptyList();
 		}
@@ -142,6 +142,10 @@ final class Utils {
 			if (element != null) {
 				list.add(element);
 			}
+		}
+
+		if (list.isEmpty()) {
+			throw new IllegalArgumentException("List must not be empty");
 		}
 
 		return list;
