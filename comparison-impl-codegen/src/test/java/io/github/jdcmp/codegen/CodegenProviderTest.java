@@ -581,6 +581,91 @@ public class CodegenProviderTest {
 	}
 
 	@Nested
+	class InitializationModeTests {
+
+		@Test
+		@EnabledForJreRange(min = JRE.JAVA_8, max = JRE.JAVA_16)
+		void staticInitializer_classLoader() {
+			provider.setInitializationMode(AvailableInitializationMode.STATIC_INITIALIZER);
+			provider.setClassDefiners(AvailableClassDefiner.CLASS_LOADER);
+			createComparator();
+		}
+
+		@Test
+		@EnabledForJreRange(min = JRE.JAVA_8, max = JRE.JAVA_16)
+		void staticInitializer_vmAnonymous() {
+			provider.setInitializationMode(AvailableInitializationMode.STATIC_INITIALIZER);
+			provider.setClassDefiners(AvailableClassDefiner.VM_ANONYMOUS);
+			createComparator();
+		}
+
+		@Test
+		@EnabledForJreRange(min = JRE.JAVA_9)
+		void staticInitializer_lookup() {
+			provider.setInitializationMode(AvailableInitializationMode.STATIC_INITIALIZER);
+			provider.setClassDefiners(AvailableClassDefiner.LOOKUP);
+			createComparator();
+		}
+
+		@Test
+		@EnabledForJreRange(min = JRE.JAVA_15)
+		void staticInitializer_lookupHidden() {
+			provider.setInitializationMode(AvailableInitializationMode.STATIC_INITIALIZER);
+			provider.setClassDefiners(AvailableClassDefiner.LOOKUP_HIDDEN);
+			createComparator();
+		}
+
+		@Test
+		@EnabledForJreRange(min = JRE.JAVA_16)
+		void staticInitializer_lookupHiddenClassData() {
+			provider.setInitializationMode(AvailableInitializationMode.STATIC_INITIALIZER);
+			provider.setClassDefiners(AvailableClassDefiner.LOOKUP_HIDDEN_CLASS_DATA);
+			createComparator();
+		}
+
+		@Test
+		@EnabledForJreRange(min = JRE.JAVA_8, max = JRE.JAVA_16)
+		void external_classLoader() {
+			provider.setInitializationMode(AvailableInitializationMode.EXTERNAL);
+			provider.setClassDefiners(AvailableClassDefiner.CLASS_LOADER);
+			createComparator();
+		}
+
+		@Test
+		@EnabledForJreRange(min = JRE.JAVA_8, max = JRE.JAVA_16)
+		void external_vmAnonymous() {
+			provider.setInitializationMode(AvailableInitializationMode.EXTERNAL);
+			provider.setClassDefiners(AvailableClassDefiner.CLASS_LOADER);
+			createComparator();
+		}
+
+		@Test
+		@EnabledForJreRange(min = JRE.JAVA_9)
+		void external_lookup() {
+			provider.setInitializationMode(AvailableInitializationMode.EXTERNAL);
+			provider.setClassDefiners(AvailableClassDefiner.LOOKUP);
+			createComparator();
+		}
+
+		@Test
+		@EnabledForJreRange(min = JRE.JAVA_15)
+		void external_lookupHidden() {
+			provider.setInitializationMode(AvailableInitializationMode.EXTERNAL);
+			provider.setClassDefiners(AvailableClassDefiner.LOOKUP_HIDDEN);
+			Assertions.assertThrows(UnsupportedOperationException.class, CodegenProviderTest.this::createComparator);
+		}
+
+		@Test
+		@EnabledForJreRange(min = JRE.JAVA_16)
+		void external_lookupHiddenClassData() {
+			provider.setInitializationMode(AvailableInitializationMode.EXTERNAL);
+			provider.setClassDefiners(AvailableClassDefiner.LOOKUP_HIDDEN_CLASS_DATA);
+			Assertions.assertThrows(UnsupportedOperationException.class, CodegenProviderTest.this::createComparator);
+		}
+
+	}
+
+	@Nested
 	class CustomizationTests {
 
 		@Test

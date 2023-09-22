@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Assertions;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 
 class ClassMetadataTest {
 
@@ -48,18 +49,18 @@ class ClassMetadataTest {
 		@SuppressWarnings("rawtypes")
 		Class<? extends OrderingComparator> clazz = createNonSerializable(provider).getClass();
 
-		ParameterizedType classToCompare = fieldType(clazz, "classToCompare");
-		ParameterizedType getter0 = fieldType(clazz, "getter0");
-		ParameterizedType getter1 = fieldType(clazz, "getter1");
+		ParameterizedType classToCompare = parameterizedType(clazz, "classToCompare");
+		ParameterizedType getter0 = parameterizedType(clazz, "getter0");
+		ParameterizedType getter1 = parameterizedType(clazz, "getter1");
 
 		Assertions.assertEquals(Class.class, classToCompare.getRawType());
 		Assertions.assertEquals(X.class, classToCompare.getActualTypeArguments()[0]);
 
 		Assertions.assertEquals(OrderingCriterion.class, getter0.getRawType());
-		Assertions.assertEquals(X.class, getter0.getActualTypeArguments()[0]);
+		assertWildcardGetter(getter0);
 
 		Assertions.assertEquals(OrderingCriterion.class, getter1.getRawType());
-		Assertions.assertEquals(X.class, getter1.getActualTypeArguments()[0]);
+		assertWildcardGetter(getter1);
 	}
 
 	@ProviderTest
@@ -67,10 +68,10 @@ class ClassMetadataTest {
 		@SuppressWarnings("rawtypes")
 		Class<? extends SerializableOrderingComparator> clazz = createSerializable(provider).getClass();
 
-		ParameterizedType spec = fieldType(clazz, "spec");
-		ParameterizedType classToCompare = fieldType(clazz, "classToCompare");
-		ParameterizedType getter0 = fieldType(clazz, "getter0");
-		ParameterizedType getter1 = fieldType(clazz, "getter1");
+		ParameterizedType spec = parameterizedType(clazz, "spec");
+		ParameterizedType classToCompare = parameterizedType(clazz, "classToCompare");
+		ParameterizedType getter0 = parameterizedType(clazz, "getter0");
+		ParameterizedType getter1 = parameterizedType(clazz, "getter1");
 
 		Assertions.assertEquals(SerializableOrderingComparatorSpec.class, spec.getRawType());
 		Assertions.assertEquals(X.class, spec.getActualTypeArguments()[0]);
@@ -79,13 +80,19 @@ class ClassMetadataTest {
 		Assertions.assertEquals(X.class, classToCompare.getActualTypeArguments()[0]);
 
 		Assertions.assertEquals(SerializableOrderingCriterion.class, getter0.getRawType());
-		Assertions.assertEquals(X.class, getter0.getActualTypeArguments()[0]);
+		assertWildcardGetter(getter0);
 
 		Assertions.assertEquals(SerializableOrderingCriterion.class, getter1.getRawType());
-		Assertions.assertEquals(X.class, getter1.getActualTypeArguments()[0]);
+		assertWildcardGetter(getter1);
 	}
 
-	private ParameterizedType fieldType(Class<?> clazz, String fieldName) throws Exception {
+	static void assertWildcardGetter(ParameterizedType getter) {
+		WildcardType wildcardType = (WildcardType) getter.getActualTypeArguments()[0];
+
+		Assertions.assertEquals(X.class, wildcardType.getLowerBounds()[0]);
+	}
+
+	private ParameterizedType parameterizedType(Class<?> clazz, String fieldName) throws Exception {
 		Field field = clazz.getDeclaredField(fieldName);
 		Type genericType = field.getGenericType();
 
@@ -109,6 +116,5 @@ class ClassMetadataTest {
 				.use(SerializableComparableGetter.of(X::getB))
 				.build(provider);
 	}
-
 
 }

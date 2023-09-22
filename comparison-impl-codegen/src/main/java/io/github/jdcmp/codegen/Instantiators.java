@@ -41,7 +41,7 @@ final class Instantiators {
 		}
 	}
 
-	private static final class UnsafeInstantiator implements Instantiator {
+	static final class UnsafeInstantiator implements Instantiator {
 
 		UnsafeInstantiator() {
 			Utils.initializeClass(Holder.class);
@@ -83,7 +83,7 @@ final class Instantiators {
 
 	}
 
-	private static final class ReflectionFactoryInstantiator implements Instantiator {
+	static final class ReflectionFactoryInstantiator implements Instantiator {
 
 		ReflectionFactoryInstantiator() {
 			Utils.initializeClass(Holder.class);
@@ -128,16 +128,16 @@ final class Instantiators {
 			static final MethodHandle NEW_CONSTRUCTOR_FOR_SERIALIZATION;
 
 			static {
-				MethodHandle newConstructorForSerialization = Internals.ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION.find();
-				Object reflectionFactory = Internals.ReflectionFactory.getInstance();
-				NEW_CONSTRUCTOR_FOR_SERIALIZATION = newConstructorForSerialization.bindTo(reflectionFactory);
+				NEW_CONSTRUCTOR_FOR_SERIALIZATION = Internals.ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION
+						.find()
+						.bindTo(Internals.ReflectionFactory.getInstance());
 			}
 
 		}
 
 	}
 
-	private static final class ReflectionFactoryConstructorInstantiator implements Instantiator {
+	static final class ReflectionFactoryConstructorInstantiator implements Instantiator {
 
 		ReflectionFactoryConstructorInstantiator() {
 			Utils.initializeClass(Holder.class);
@@ -183,17 +183,16 @@ final class Instantiators {
 			static final MethodHandle NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR;
 
 			static {
-				Object reflectionFactory = Internals.ReflectionFactory.getInstance();
 				NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR = Internals.ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR
 						.find()
-						.bindTo(reflectionFactory);
+						.bindTo(Internals.ReflectionFactory.getInstance());
 			}
 
 		}
 
 	}
 
-	private static final class ConstructorInstantiator implements Instantiator {
+	static final class ConstructorInstantiator implements Instantiator {
 
 		@Override
 		public boolean requiresConstructor() {

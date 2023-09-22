@@ -6,13 +6,22 @@ import io.github.jdcmp.api.comparator.ordering.OrderingComparator;
 import io.github.jdcmp.api.comparator.ordering.SerializableOrderingComparator;
 import io.github.jdcmp.api.documentation.ThreadSafe;
 import io.github.jdcmp.api.provider.ComparatorProvider;
+import io.github.jdcmp.api.provider.ComparatorProviders;
 import io.github.jdcmp.api.spec.Spec;
 import io.github.jdcmp.api.spec.Specs;
 import io.github.jdcmp.api.spec.equality.EqualityComparatorSpec;
 import io.github.jdcmp.api.spec.equality.SerializableEqualityComparatorSpec;
 import io.github.jdcmp.api.spec.ordering.OrderingComparatorSpec;
 import io.github.jdcmp.api.spec.ordering.SerializableOrderingComparatorSpec;
-import io.github.jdcmp.codegen.ClassDefiners.*;
+import io.github.jdcmp.codegen.ClassDefiners.ClassLoaderClassDefiner;
+import io.github.jdcmp.codegen.ClassDefiners.LookupClassDefiner;
+import io.github.jdcmp.codegen.ClassDefiners.LookupHiddenClassDefiner;
+import io.github.jdcmp.codegen.ClassDefiners.LookupHiddenClassWithClassDataDefiner;
+import io.github.jdcmp.codegen.ClassDefiners.VMAnonymousClassDefiner;
+import io.github.jdcmp.codegen.Instantiators.ConstructorInstantiator;
+import io.github.jdcmp.codegen.Instantiators.ReflectionFactoryConstructorInstantiator;
+import io.github.jdcmp.codegen.Instantiators.ReflectionFactoryInstantiator;
+import io.github.jdcmp.codegen.Instantiators.UnsafeInstantiator;
 import io.github.jdcmp.codegen.bridge.GeneratedClassHolder;
 import io.github.jdcmp.codegen.contract.EventHandler;
 import io.github.jdcmp.codegen.contract.LookupFactory;
@@ -26,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -33,8 +43,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class is the ServiceProvider for <i>comparison-impl-codegen</i>.
+ * <p>This class is the ServiceProvider for <i>comparison-impl-codegen</i>, which is a concrete implementation of the abstract API
+ * <i>comparison-api</i>.</p>
  *
+ * <p>Instances are usually obtained via {@link ComparatorProviders#load(Class)}. However, if customization of the {@link LookupFactory}
+ * is necessary, one of the {@link #of(LookupFactory)} or {@link #of(Lookup)} static factory methods may be used.</p>
  */
 @ThreadSafe
 @CarefulRefactoring(reason = "Public API")
@@ -46,8 +59,6 @@ public final class CodegenProvider implements ComparatorProvider {
 			= new ConstantLookupFactory(GeneratedClassHolder.lookup(MethodHandles.lookup()));
 
 	private final Customization customization;
-
-	private final ClassDefinerHolder classDefiners = new ClassDefinerHolder();
 
 	// ********************************************************************************************
 	// Instantiation
@@ -209,7 +220,7 @@ public final class CodegenProvider implements ComparatorProvider {
 		EventHandler eventHandler = customization.getEventHandler();
 		Collection<AvailableClassDefiner> availableClassDefiners = customization.getClassDefiners();
 		ImplSpec.OptionalClassDefiners classDefiners = createOptionalClassDefiners(availableClassDefiners);
-		Collection<Instantiator> instantiators = Instantiators.create(customization.getInstantiators());
+		List<Instantiator> instantiators = createInstantiators(customization.getInstantiators());
 		ImplSpec.ClassGeneratorConfig classGeneratorConfig = customization.getClassGeneratorConfig();
 
 		return new ImplSpec(lookup, eventHandler, classDefiners, instantiators, classGeneratorConfig);
@@ -230,17 +241,30 @@ public final class CodegenProvider implements ComparatorProvider {
 		return lookup;
 	}
 
-	private ImplSpec.OptionalClassDefiners createOptionalClassDefiners(Collection<AvailableClassDefiner> availableClassDefiners) {
+	private ImplSpec.OptionalClassDefiners createOptionalClassDefiners(Collection<AvailableClassDefiner> classDefiners) {
 		try {
 			return new ImplSpec.OptionalClassDefiners(
-					classDefiners.vmAnonymous(availableClassDefiners),
-					classDefiners.lookupHiddenClassWithClassDataDefiner(availableClassDefiners),
-					classDefiners.lookupHiddenClassDefiner(availableClassDefiners),
-					classDefiners.lookupClassDefiner(availableClassDefiners),
-					classDefiners.classLoaderClassDefiner(availableClassDefiners)
+					ClassDefinerHolder.vmAnonymous(classDefiners),
+					ClassDefinerHolder.lookupHiddenClassWithClassDataDefiner(classDefiners),
+					ClassDefinerHolder.lookupHiddenClassDefiner(classDefiners),
+					ClassDefinerHolder.lookupClassDefiner(classDefiners),
+					ClassDefinerHolder.classLoaderClassDefiner(classDefiners)
 			);
 		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("None of the following ClassDefiners is available: " + availableClassDefiners, e);
+			throw new IllegalArgumentException("ClassDefiners are unavailable: " + classDefiners, e);
+		}
+	}
+
+	private List<Instantiator> createInstantiators(Collection<AvailableInstantiator> instantiators) {
+		try {
+			return Utils.nonEmptyArrayListOfNonNulls(
+					InstantiatorHolder.unsafe(instantiators),
+					InstantiatorHolder.reflectionFactory(instantiators),
+					InstantiatorHolder.reflectionFactoryConstructor(instantiators),
+					InstantiatorHolder.constructor(instantiators)
+			);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Instantiators are unavailable: " + instantiators, e);
 		}
 	}
 
@@ -291,7 +315,7 @@ public final class CodegenProvider implements ComparatorProvider {
 			return Utils.or(this.classDefiners, DEFAULT_CLASS_DEFINERS);
 		}
 
-		private Set<AvailableInstantiator> getInstantiators() {
+		Set<AvailableInstantiator> getInstantiators() {
 			return Utils.or(this.instantiators, DEFAULT_INSTANTIATORS);
 		}
 
@@ -336,17 +360,20 @@ public final class CodegenProvider implements ComparatorProvider {
 		}
 	}
 
+	@ThreadSafe
 	private enum NoopEventHandler implements EventHandler {
 
 		INSTANCE
 
 	}
 
+	@ThreadSafe
 	private static final class ClassDefinerHolder {
 
 		private static final Lazy<VMAnonymousClassDefiner> VM_ANONYMOUS = new Lazy<>(VMAnonymousClassDefiner::new);
 
-		private static final Lazy<LookupHiddenClassWithClassDataDefiner> LOOKUP_HIDDEN_CLASS_WITH_CLASS_DATA = new Lazy<>(LookupHiddenClassWithClassDataDefiner::new);
+		private static final Lazy<LookupHiddenClassWithClassDataDefiner> LOOKUP_HIDDEN_CLASS_WITH_CLASS_DATA
+				= new Lazy<>(LookupHiddenClassWithClassDataDefiner::new);
 
 		private static final Lazy<LookupHiddenClassDefiner> LOOKUP_HIDDEN = new Lazy<>(LookupHiddenClassDefiner::new);
 
@@ -354,40 +381,57 @@ public final class CodegenProvider implements ComparatorProvider {
 
 		private static final Lazy<ClassLoaderClassDefiner> CLASS_LOADER = new Lazy<>(ClassLoaderClassDefiner::new);
 
-		@Nullable
-		VMAnonymousClassDefiner vmAnonymous(Collection<AvailableClassDefiner> availableClassDefiners) {
-			return load(availableClassDefiners, AvailableClassDefiner.VM_ANONYMOUS, VM_ANONYMOUS);
+		static @Nullable VMAnonymousClassDefiner vmAnonymous(Collection<AvailableClassDefiner> classDefiners) {
+			return VM_ANONYMOUS.load(classDefiners, AvailableClassDefiner.VM_ANONYMOUS);
 		}
 
-		@Nullable
-		LookupHiddenClassWithClassDataDefiner lookupHiddenClassWithClassDataDefiner(Collection<AvailableClassDefiner> availableClassDefiners) {
-			return load(availableClassDefiners, AvailableClassDefiner.LOOKUP_HIDDEN_CLASS_DATA, LOOKUP_HIDDEN_CLASS_WITH_CLASS_DATA);
+		static @Nullable LookupHiddenClassWithClassDataDefiner lookupHiddenClassWithClassDataDefiner(
+				Collection<AvailableClassDefiner> classDefiners) {
+			return LOOKUP_HIDDEN_CLASS_WITH_CLASS_DATA.load(classDefiners, AvailableClassDefiner.LOOKUP_HIDDEN_CLASS_DATA);
 		}
 
-		@Nullable
-		LookupHiddenClassDefiner lookupHiddenClassDefiner(Collection<AvailableClassDefiner> availableClassDefiners) {
-			return load(availableClassDefiners, AvailableClassDefiner.LOOKUP_HIDDEN, LOOKUP_HIDDEN);
+		static @Nullable LookupHiddenClassDefiner lookupHiddenClassDefiner(Collection<AvailableClassDefiner> classDefiners) {
+			return LOOKUP_HIDDEN.load(classDefiners, AvailableClassDefiner.LOOKUP_HIDDEN);
 		}
 
-		@Nullable
-		LookupClassDefiner lookupClassDefiner(Collection<AvailableClassDefiner> availableClassDefiners) {
-			return load(availableClassDefiners, AvailableClassDefiner.LOOKUP, LOOKUP);
+		static @Nullable LookupClassDefiner lookupClassDefiner(Collection<AvailableClassDefiner> classDefiners) {
+			return LOOKUP.load(classDefiners, AvailableClassDefiner.LOOKUP);
 		}
 
-		@Nullable
-		ClassLoaderClassDefiner classLoaderClassDefiner(Collection<AvailableClassDefiner> availableClassDefiners) {
-			return load(availableClassDefiners, AvailableClassDefiner.CLASS_LOADER, CLASS_LOADER);
+		static @Nullable ClassLoaderClassDefiner classLoaderClassDefiner(Collection<AvailableClassDefiner> classDefiners) {
+			return CLASS_LOADER.load(classDefiners, AvailableClassDefiner.CLASS_LOADER);
 		}
 
-		private <T> @Nullable T load(Collection<AvailableClassDefiner> available, AvailableClassDefiner wanted, Lazy<T> lazy) {
-			try {
-				return available.contains(wanted) ? lazy.load() : null;
-			} catch (@SuppressWarnings("removal") ThreadDeath e) {
-				throw e;
-			} catch (Throwable e) {
-				LOGGER.log(Level.FINE, "ClassDefiner is unavailable: " + wanted, e);
-				return null;
-			}
+	}
+
+	@ThreadSafe
+	private static final class InstantiatorHolder {
+
+		private static final Lazy<UnsafeInstantiator> UNSAFE = new Lazy<>(UnsafeInstantiator::new);
+
+		private static final Lazy<ReflectionFactoryInstantiator> REFLECTION_FACTORY
+				= new Lazy<>(ReflectionFactoryInstantiator::new);
+
+		private static final Lazy<ReflectionFactoryConstructorInstantiator> REFLECTION_FACTORY_CONSTRUCTOR
+				= new Lazy<>(ReflectionFactoryConstructorInstantiator::new);
+
+		private static final Lazy<ConstructorInstantiator> CONSTRUCTOR = new Lazy<>(ConstructorInstantiator::new);
+
+		static @Nullable UnsafeInstantiator unsafe(Collection<AvailableInstantiator> instantiators) {
+			return UNSAFE.load(instantiators, AvailableInstantiator.UNSAFE);
+		}
+
+		static @Nullable ReflectionFactoryInstantiator reflectionFactory(Collection<AvailableInstantiator> instantiators) {
+			return REFLECTION_FACTORY.load(instantiators, AvailableInstantiator.REFLECTION_FACTORY);
+		}
+
+		static @Nullable ReflectionFactoryConstructorInstantiator reflectionFactoryConstructor(
+				Collection<AvailableInstantiator> instantiators) {
+			return REFLECTION_FACTORY_CONSTRUCTOR.load(instantiators, AvailableInstantiator.REFLECTION_FACTORY);
+		}
+
+		static @Nullable ConstructorInstantiator constructor(Collection<AvailableInstantiator> instantiators) {
+			return CONSTRUCTOR.load(instantiators, AvailableInstantiator.CONSTRUCTOR);
 		}
 
 	}
@@ -401,6 +445,18 @@ public final class CodegenProvider implements ComparatorProvider {
 
 		Lazy(Callable<? extends T> factory) {
 			this.factory = Objects.requireNonNull(factory);
+		}
+
+		public <A extends Enum<A>> @Nullable T load(Collection<A> available, A wanted) {
+			try {
+				return available.contains(wanted) ? load() : null;
+			} catch (@SuppressWarnings("removal") ThreadDeath e) {
+				throw e;
+			} catch (Throwable e) {
+				String msg = wanted.getClass().getSimpleName() + "." + wanted.name() + " is unavailable.";
+				LOGGER.log(Level.FINE, msg, e);
+				return null;
+			}
 		}
 
 		public T load() throws Exception {
@@ -420,7 +476,7 @@ public final class CodegenProvider implements ComparatorProvider {
 
 				return value;
 			} finally {
-				this.factory = null;
+				this.factory = null; // throw only once, the next call will return null
 			}
 		}
 
