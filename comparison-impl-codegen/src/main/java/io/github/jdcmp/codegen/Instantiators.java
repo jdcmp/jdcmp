@@ -53,7 +53,7 @@ final class Instantiators {
 		}
 
 		@Override
-		public boolean supportsVmAnonOrHiddenClasses() {
+		public boolean supports(ClassDefiner classDefiner) {
 			return true;
 		}
 
@@ -95,8 +95,8 @@ final class Instantiators {
 		}
 
 		@Override
-		public boolean supportsVmAnonOrHiddenClasses() {
-			return false;
+		public boolean supports(ClassDefiner classDefiner) {
+			return !classDefiner.producesVmAnonymousOrHiddenClasses();
 		}
 
 		@SuppressWarnings("unchecked")
@@ -149,8 +149,8 @@ final class Instantiators {
 		}
 
 		@Override
-		public boolean supportsVmAnonOrHiddenClasses() {
-			return false;
+		public boolean supports(ClassDefiner classDefiner) {
+			return !classDefiner.producesVmAnonymousOrHiddenClasses();
 		}
 
 		@SuppressWarnings("unchecked")
@@ -200,7 +200,7 @@ final class Instantiators {
 		}
 
 		@Override
-		public boolean supportsVmAnonOrHiddenClasses() {
+		public boolean supports(ClassDefiner classDefiner) {
 			return true;
 		}
 

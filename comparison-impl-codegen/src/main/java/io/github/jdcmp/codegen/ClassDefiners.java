@@ -20,6 +20,16 @@ final class ClassDefiners {
 			Utils.initializeClass(Holder.class);
 		}
 
+		@Override
+		public boolean supportsExternalInitialization() {
+			return true;
+		}
+
+		@Override
+		public boolean producesVmAnonymousOrHiddenClasses() {
+			return false;
+		}
+
 		public <T> Class<T> defineClass(ClassDefinition classDefinition) {
 			String name = classDefinition.getName();
 			byte[] bytes = classDefinition.getBytes();
@@ -72,6 +82,16 @@ final class ClassDefiners {
 			Utils.initializeClass(Holder.class);
 		}
 
+		@Override
+		public boolean supportsExternalInitialization() {
+			return true;
+		}
+
+		@Override
+		public boolean producesVmAnonymousOrHiddenClasses() {
+			return false;
+		}
+
 		public <T> Class<T> defineClass(ClassDefinition classDefinition) {
 			Lookup lookup = classDefinition.getHost();
 			Utils.verifyHasClassLoader(lookup.lookupClass());
@@ -106,6 +126,16 @@ final class ClassDefiners {
 
 		LookupHiddenClassDefiner() {
 			Utils.initializeClass(Holder.class);
+		}
+
+		@Override
+		public boolean supportsExternalInitialization() {
+			return false;
+		}
+
+		@Override
+		public boolean producesVmAnonymousOrHiddenClasses() {
+			return true;
 		}
 
 		public <T> Class<T> defineClass(ClassDefinition classDefinition) {
@@ -163,6 +193,16 @@ final class ClassDefiners {
 
 		LookupHiddenClassWithClassDataDefiner() {
 			Utils.initializeClass(Holder.class);
+		}
+
+		@Override
+		public boolean supportsExternalInitialization() {
+			return false;
+		}
+
+		@Override
+		public boolean producesVmAnonymousOrHiddenClasses() {
+			return true;
 		}
 
 		@Override
@@ -242,6 +282,16 @@ final class ClassDefiners {
 
 		VMAnonymousClassDefiner() {
 			Utils.initializeClass(Holder.class);
+		}
+
+		@Override
+		public boolean supportsExternalInitialization() {
+			return true;
+		}
+
+		@Override
+		public boolean producesVmAnonymousOrHiddenClasses() {
+			return true;
 		}
 
 		@Override

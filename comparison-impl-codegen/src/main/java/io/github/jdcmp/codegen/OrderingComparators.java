@@ -30,7 +30,25 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.ARETURN;
+import static org.objectweb.asm.Opcodes.CHECKCAST;
+import static org.objectweb.asm.Opcodes.DUP;
+import static org.objectweb.asm.Opcodes.GETSTATIC;
+import static org.objectweb.asm.Opcodes.GOTO;
+import static org.objectweb.asm.Opcodes.ICONST_0;
+import static org.objectweb.asm.Opcodes.ICONST_1;
+import static org.objectweb.asm.Opcodes.IFEQ;
+import static org.objectweb.asm.Opcodes.IFNONNULL;
+import static org.objectweb.asm.Opcodes.ILOAD;
+import static org.objectweb.asm.Opcodes.INVOKEINTERFACE;
+import static org.objectweb.asm.Opcodes.INVOKESTATIC;
+import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
+import static org.objectweb.asm.Opcodes.IRETURN;
+import static org.objectweb.asm.Opcodes.ISTORE;
+import static org.objectweb.asm.Opcodes.POP;
 
 @ThreadSafe
 final class OrderingComparators {
@@ -49,7 +67,7 @@ final class OrderingComparators {
 			if (userSpec.hasNoGetters()) {
 				return useFallback(userSpec);
 			} else if (AsmGenerator.supports(userSpec)) {
-				return AsmGenerator.generate(userSpec, implSpec);
+				return AsmGenerator.GENERATOR.generate(userSpec, implSpec);
 			}
 
 			return handleNulls(userSpec, new ComparatorN<>(userSpec));
@@ -110,7 +128,7 @@ final class OrderingComparators {
 			if (userSpec.hasNoGetters()) {
 				return useFallback(userSpec, implSpec);
 			} else if (AsmGenerator.supports(userSpec)) {
-				return AsmGenerator.generateSerializable(userSpec, implSpec);
+				return AsmGenerator.GENERATOR_SERIALIZABLE.generate(userSpec, implSpec);
 			}
 
 			return handleNulls(userSpec, implSpec, new SerializableComparatorN<>(userSpec, implSpec));
@@ -127,7 +145,7 @@ final class OrderingComparators {
 
 				@Override
 				public SerializableOrderingComparator<T> onNatural() {
-					return handleNulls(userSpec,implSpec, naturalOrderingFallback(userSpec));
+					return handleNulls(userSpec, implSpec, naturalOrderingFallback(userSpec));
 				}
 			});
 		}
@@ -309,8 +327,8 @@ final class OrderingComparators {
 	}
 
 	@NotThreadSafe
-	private static final class AsmGenerator<T, C extends OrderingComparator<T>, G extends OrderingCriterion<? super T>>
-			extends AbstractAsmGenerator<C, BaseOrderingComparatorSpec<T, G>> {
+	private static final class AsmGenerator<C extends OrderingComparator<?>>
+			extends BytecodeGenerator<C, BaseOrderingComparatorSpec<?, ?>> {
 
 		private static final int MAX_SUPPORTED_GETTERS = 32;
 
@@ -318,29 +336,35 @@ final class OrderingComparators {
 
 		private static final Method SPEC_TO_SERIALIZED_FORM;
 
-		private static final Method STATIC_INITIALIZER_BRIDGE;
+		static final AsmGenerator<OrderingComparator<?>> GENERATOR;
 
-		private static final Method STATIC_INITIALIZER_BRIDGE_SERIALIZABLE;
-
-		private static final Type SPEC_NONSERIALIZABLE_TYPE = Type.getType(OrderingComparatorSpec.class);
-
-		private static final Type SPEC_SERIALIZABLE_TYPE = Type.getType(SerializableOrderingComparatorSpec.class);
-
-		private static final Type GETTER_NONSERIALIZABLE_TYPE = Type.getType(OrderingCriterion.class);
-
-		private static final Type GETTER_SERIALIZABLE_TYPE = Type.getType(SerializableOrderingCriterion.class);
+		static final AsmGenerator<SerializableOrderingComparator<?>> GENERATOR_SERIALIZABLE;
 
 		static {
 			try {
 				SPEC_TO_SERIALIZED_FORM = SerializableOrderingComparatorSpec.class.getDeclaredMethod("toSerializedForm");
-				STATIC_INITIALIZER_BRIDGE = StaticInitializerBridge.class.getDeclaredMethod("ordering", Lookup.class);
-				STATIC_INITIALIZER_BRIDGE_SERIALIZABLE = StaticInitializerBridge.class.getDeclaredMethod("orderingSerializable", Lookup.class);
+				Method staticInitializerBridge = StaticInitializerBridge.class.getDeclaredMethod("ordering", Lookup.class);
+				Method staticInitializerBridgeSerializable = StaticInitializerBridge.class
+						.getDeclaredMethod("orderingSerializable", Lookup.class);
+
+				GeneratorConfig generatorConfig = new GeneratorConfig(
+						OrderingComparator.class,
+						OrderingComparatorSpec.class,
+						OrderingCriterion.class,
+						"GeneratedOrderingComparator",
+						staticInitializerBridge);
+				GeneratorConfig generatorConfigSerializable = new GeneratorConfig(
+						SerializableOrderingComparator.class,
+						SerializableOrderingComparatorSpec.class,
+						SerializableOrderingCriterion.class,
+						"GeneratedOrderingComparator",
+						staticInitializerBridgeSerializable);
+				GENERATOR = new AsmGenerator<>(generatorConfig);
+				GENERATOR_SERIALIZABLE = new AsmGenerator<>(generatorConfigSerializable);
 			} catch (Exception e) {
 				throw new ExceptionInInitializerError(e);
 			}
 		}
-
-		private final Class<?> comparatorType;
 
 		public static boolean supports(BaseOrderingComparatorSpec<?, ?> spec) {
 			int getterCount = spec.getGetterCount();
@@ -348,33 +372,8 @@ final class OrderingComparators {
 			return getterCount > 0 && getterCount <= AsmGenerator.MAX_SUPPORTED_GETTERS;
 		}
 
-		static <T> OrderingComparator<T> generate(OrderingComparatorSpec<T> userSpec, ImplSpec implSpec) {
-			AsmGenerator<T, OrderingComparator<T>, OrderingCriterion<T>> generator = new AsmGenerator<>(
-					userSpec,
-					implSpec,
-					OrderingComparator.class);
-
-			return generator.createInstance();
-		}
-
-		static <T, C extends SerializableOrderingComparator<T>, G extends SerializableOrderingCriterion<? super T>> SerializableOrderingComparator<T>
-		generateSerializable(SerializableOrderingComparatorSpec<T> userSpec, ImplSpec implSpec) {
-			AsmGenerator<T, SerializableOrderingComparator<T>, SerializableOrderingCriterion<T>> generator = new AsmGenerator<>(
-					userSpec,
-					implSpec,
-					SerializableOrderingComparator.class);
-
-			return generator.createInstance();
-		}
-
-		private AsmGenerator(BaseOrderingComparatorSpec<T, G> userSpec, ImplSpec implSpec, Class<?> comparatorType) {
-			super(userSpec, implSpec);
-			this.comparatorType = Objects.requireNonNull(comparatorType);
-		}
-
-		@Override
-		protected String classNamePrefix() {
-			return "GeneratedOrderingComparator";
+		private AsmGenerator(GeneratorConfig config) {
+			super(config);
 		}
 
 		@Override
@@ -383,44 +382,24 @@ final class OrderingComparators {
 		}
 
 		@Override
-		protected Class<?> comparatorClass() {
-			return comparatorType;
-		}
-
-		@Override
-		protected Type specType() {
-			return isSerializable() ? SPEC_SERIALIZABLE_TYPE : SPEC_NONSERIALIZABLE_TYPE;
-		}
-
-		@Override
 		protected void addCompatibleSerializationMethod(ClassWriter cw, ClassDescription cd) {
 			MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "writeReplace", "()Ljava/lang/Object;", null, null);
 			mv.visitCode();
 
-			mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "spec", consts.specDescriptor);
+			mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "spec", config.specType.descriptor);
 			String descriptor = Type.getMethodDescriptor(SPEC_TO_SERIALIZED_FORM);
-			mv.visitMethodInsn(INVOKEINTERFACE, consts.specInternalName, SPEC_TO_SERIALIZED_FORM.getName(), descriptor, true);
+			mv.visitMethodInsn(INVOKEINTERFACE, config.specType.internalName, SPEC_TO_SERIALIZED_FORM.getName(), descriptor, true);
 
 			endReturn(mv, ARETURN);
 		}
 
 		@Override
-		protected void customize(ClassWriter cw, ClassDescription cd) {
-			addCompareMethod(cw, cd);
+		protected void customize(ClassWriter cw, ClassDescription cd, Consts consts) {
+			addCompareMethod(cw, cd, consts);
 		}
 
-		@Override
-		protected Type getterType() {
-			return isSerializable() ? GETTER_SERIALIZABLE_TYPE : GETTER_NONSERIALIZABLE_TYPE;
-		}
-
-		private void addCompareMethod(ClassWriter cw, ClassDescription cd) {
-			new CompareTo(cd).addTo(cw);
-		}
-
-		@Override
-		protected Method getStaticInitializerBridgeMethod() {
-			return isSerializable() ? STATIC_INITIALIZER_BRIDGE_SERIALIZABLE : STATIC_INITIALIZER_BRIDGE;
+		private void addCompareMethod(ClassWriter cw, ClassDescription cd, Consts consts) {
+			new CompareTo(cd, consts).addTo(cw);
 		}
 
 		private final class CompareTo {
@@ -429,22 +408,25 @@ final class OrderingComparators {
 
 			private final ClassDescription cd;
 
+			private final Consts consts;
+
 			private final String descriptorTypeSafe;
 
-			CompareTo(ClassDescription cd) {
+			CompareTo(ClassDescription cd, Consts consts) {
 				this.cd = Objects.requireNonNull(cd);
-				String descriptor = consts.classToCompareDescriptor;
+				this.consts = consts;
+				String descriptor = consts.classToCompare.descriptor;
 				this.descriptorTypeSafe = "(" + descriptor + descriptor + ")I";
 			}
 
 			public void addTo(ClassWriter cw) {
-				String descriptor = implSpec.generateBridgeMethods() ? descriptorTypeSafe : descriptorNoBridge;
+				String descriptor = consts.implSpec.generateBridgeMethods() ? descriptorTypeSafe : descriptorNoBridge;
 
 				MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "compare", descriptor, descriptorTypeSafe, null);
 				mv.visitCode();
 
-				if (userSpec.useStrictTypes()) {
-					mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "classToCompare", Consts.CLASS_DESCRIPTOR);
+				if (consts.userSpec.useStrictTypes()) {
+					mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "classToCompare", ClassConsts.CLASS_DESCRIPTOR);
 					mv.visitInsn(DUP);
 					mv.visitVarInsn(ALOAD, 1);
 					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "cast", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
@@ -456,10 +438,10 @@ final class OrderingComparators {
 
 				addNullHandling(mv);
 
-				String getterInternalName = consts.getterInternalName;
-				String getterDescriptor = consts.getterDescriptor;
+				String getterInternalName = config.getterType.internalName;
+				String getterDescriptor = config.getterType.descriptor;
 				int i = 0;
-				for (; i < getterCount() - 1; ++i) {
+				for (; i < consts.userSpec.getGetterCount() - 1; ++i) {
 					mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "getter" + i, getterDescriptor);
 					mv.visitVarInsn(ALOAD, 1);
 					mv.visitVarInsn(ALOAD, 2);
@@ -479,20 +461,24 @@ final class OrderingComparators {
 				mv.visitMethodInsn(INVOKEINTERFACE, getterInternalName, "compare", "(Ljava/lang/Object;Ljava/lang/Object;)I", true);
 				endReturn(mv, IRETURN);
 
-				if (implSpec.generateBridgeMethods()) {
+				if (consts.implSpec.generateBridgeMethods()) {
 					addBridgeMethod(cw);
 				}
 			}
 
 			private void addNullHandling(MethodVisitor mv) {
-				NullHandling nullHandling = userSpec.getNullHandling();
+				NullHandling nullHandling = consts.userSpec.getNullHandling();
 
 				if (NullHandling.THROW.equals(nullHandling)) {
-					mv.visitVarInsn(ALOAD, 1);
-					mv.visitMethodInsn(INVOKESTATIC, "java/util/Objects", "requireNonNull", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
-					mv.visitInsn(POP);
-					mv.visitVarInsn(ALOAD, 2);
-					mv.visitMethodInsn(INVOKESTATIC, "java/util/Objects", "requireNonNull", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
+					// only fail early if strict types are enabled, otherwise let the criterion handle nulls
+					if (consts.userSpec.useStrictTypes()) {
+						mv.visitVarInsn(ALOAD, 1);
+						mv.visitMethodInsn(INVOKESTATIC, "java/util/Objects", "requireNonNull", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
+						mv.visitInsn(POP);
+						mv.visitVarInsn(ALOAD, 2);
+						mv.visitMethodInsn(INVOKESTATIC, "java/util/Objects", "requireNonNull", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
+						mv.visitInsn(POP);
+					}
 					return;
 				}
 
@@ -522,11 +508,11 @@ final class OrderingComparators {
 			}
 
 			private void addBridgeMethod(ClassWriter cw) {
-				MethodVisitor mv = cw.visitMethod(Consts.ACCESS_BRIDGE, "compare", "(Ljava/lang/Object;Ljava/lang/Object;)I", null, null);
+				MethodVisitor mv = cw.visitMethod(ClassConsts.ACCESS_BRIDGE, "compare", "(Ljava/lang/Object;Ljava/lang/Object;)I", null, null);
 				mv.visitCode();
 
-				String descriptor = consts.classToCompareDescriptor;
-				String internalName = consts.classToCompareInternalName;
+				String descriptor = consts.classToCompare.descriptor;
+				String internalName = consts.classToCompare.internalName;
 				mv.visitVarInsn(ALOAD, 0);
 				mv.visitVarInsn(ALOAD, 1);
 				mv.visitTypeInsn(CHECKCAST, internalName);

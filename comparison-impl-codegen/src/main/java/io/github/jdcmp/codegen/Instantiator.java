@@ -8,7 +8,7 @@ interface Instantiator {
 
 	boolean requiresConstructor();
 
-	boolean supportsVmAnonOrHiddenClasses();
+	boolean supports(ClassDefiner classDefiner);
 
 	<T> T newInstance(Class<? extends T> clazz);
 
