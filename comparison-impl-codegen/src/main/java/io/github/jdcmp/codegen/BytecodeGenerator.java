@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.objectweb.asm.Opcodes.ACC_BRIDGE;
 import static org.objectweb.asm.Opcodes.ACC_FINAL;
@@ -77,6 +78,8 @@ abstract class BytecodeGenerator<C extends EqualityComparator<?>, U extends Spec
 
 	protected final GeneratorConfig config;
 
+	private final AtomicInteger instanceCounter = new AtomicInteger();
+
 	protected BytecodeGenerator(GeneratorConfig config) {
 		this.config = Objects.requireNonNull(config);
 	}
@@ -118,7 +121,9 @@ abstract class BytecodeGenerator<C extends EqualityComparator<?>, U extends Spec
 	}
 
 	private ClassDescription createClassDescription(Consts consts) {
-		return new ClassDescription(config, consts.userSpec, consts.implSpec, classNameSuffix());
+		int classNameSuffix = instanceCounter.getAndIncrement();
+
+		return new ClassDescription(config, consts.userSpec, consts.implSpec, classNameSuffix);
 	}
 
 	private void validate(ImplSpec implSpec) {
@@ -140,8 +145,6 @@ abstract class BytecodeGenerator<C extends EqualityComparator<?>, U extends Spec
 	private <T extends C> T cast(C comparator) {
 		return (T) comparator;
 	}
-
-	abstract protected int classNameSuffix();
 
 	abstract protected void customize(ClassWriter cw, ClassDescription cd, Consts consts);
 
@@ -779,7 +782,7 @@ abstract class BytecodeGenerator<C extends EqualityComparator<?>, U extends Spec
 
 	}
 
-	private static final class ExternalFieldInitializer implements FieldInitializer {
+	private static final class ExternalFieldInitializer {
 
 		private final Class<?> generatedClass;
 
@@ -787,12 +790,10 @@ abstract class BytecodeGenerator<C extends EqualityComparator<?>, U extends Spec
 			this.generatedClass = Objects.requireNonNull(generatedClass);
 		}
 
-		@Override
 		public void addClassToCompare(Spec<?, ?> spec) {
 			Internals.setStaticFieldVolatile(generatedClass, "classToCompare", spec.getClassToCompare());
 		}
 
-		@Override
 		public void addGetters(Spec<?, ?> spec) {
 			int i = 0;
 			for (Object getter : spec.getGetters()) {
@@ -800,14 +801,13 @@ abstract class BytecodeGenerator<C extends EqualityComparator<?>, U extends Spec
 			}
 		}
 
-		@Override
 		public void addSpec(Spec<?, ?> spec) {
 			Internals.setStaticFieldVolatile(generatedClass, "spec", spec);
 		}
 
 	}
 
-	private final class FromSpecFieldInitializer implements FieldInitializer {
+	private final class FromSpecFieldInitializer {
 
 		private final MethodVisitor mv;
 
@@ -818,13 +818,11 @@ abstract class BytecodeGenerator<C extends EqualityComparator<?>, U extends Spec
 			this.owner = cd.generatedInternalName;
 		}
 
-		@Override
 		public void addClassToCompare(Spec<?, ?> spec) {
 			mv.visitMethodInsn(INVOKEINTERFACE, config.specType.internalName, "getClassToCompare", "()Ljava/lang/Class;", true);
 			mv.visitFieldInsn(PUTSTATIC, owner, "classToCompare", ClassConsts.CLASS_DESCRIPTOR);
 		}
 
-		@Override
 		public void addGetters(Spec<?, ?> spec) {
 			mv.visitMethodInsn(INVOKEINTERFACE, config.specType.internalName, "getGettersAsList", "()Ljava/util/List;", true);
 			String getterDescriptor = config.getterType.descriptor;
@@ -840,20 +838,9 @@ abstract class BytecodeGenerator<C extends EqualityComparator<?>, U extends Spec
 			}
 		}
 
-		@Override
 		public void addSpec(Spec<?, ?> spec) {
 			mv.visitFieldInsn(PUTSTATIC, owner, "spec", config.specType.descriptor);
 		}
-
-	}
-
-	private interface FieldInitializer {
-
-		void addClassToCompare(Spec<?, ?> spec);
-
-		void addGetters(Spec<?, ?> spec);
-
-		void addSpec(Spec<?, ?> spec);
 
 	}
 

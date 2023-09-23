@@ -195,13 +195,11 @@ final class EqualityComparators {
 
 	}
 
-	@NotThreadSafe
+	@ThreadSafe
 	private static final class AsmGenerator<C extends EqualityComparator<?>>
 			extends BytecodeGenerator<C, BaseEqualityComparatorSpec<?, ?>> {
 
 		private static final int MAX_SUPPORTED_GETTERS = 32;
-
-		private static final AtomicInteger INSTANCE_COUNTER = new AtomicInteger();
 
 		public static final String SPEC_TO_SERIALIZED_FORM_NAME = "toSerializedForm";
 
@@ -229,7 +227,7 @@ final class EqualityComparators {
 						SerializableEqualityComparator.class,
 						SerializableEqualityComparatorSpec.class,
 						SerializableEqualityCriterion.class,
-						"GeneratedEqualityComparator",
+						"GeneratedSerializableEqualityComparator",
 						staticInitializerBridgeSerializable);
 				GENERATOR = new AsmGenerator<>(generatorConfig);
 				GENERATOR_SERIALIZABLE = new AsmGenerator<>(generatorConfigSerializable);
@@ -246,11 +244,6 @@ final class EqualityComparators {
 
 		private AsmGenerator(GeneratorConfig config) {
 			super(config);
-		}
-
-		@Override
-		protected int classNameSuffix() {
-			return INSTANCE_COUNTER.getAndIncrement();
 		}
 
 		@Override

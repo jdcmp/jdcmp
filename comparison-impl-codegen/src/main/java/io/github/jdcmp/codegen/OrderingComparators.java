@@ -6,7 +6,6 @@ import io.github.jdcmp.api.builder.ordering.OrderingFallbackMode.FallbackMapper;
 import io.github.jdcmp.api.comparator.ordering.NullHandling;
 import io.github.jdcmp.api.comparator.ordering.OrderingComparator;
 import io.github.jdcmp.api.comparator.ordering.SerializableOrderingComparator;
-import io.github.jdcmp.api.documentation.NotThreadSafe;
 import io.github.jdcmp.api.documentation.ThreadSafe;
 import io.github.jdcmp.api.getter.OrderingCriterion;
 import io.github.jdcmp.api.getter.SerializableOrderingCriterion;
@@ -28,7 +27,6 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
@@ -326,13 +324,11 @@ final class OrderingComparators {
 
 	}
 
-	@NotThreadSafe
+	@ThreadSafe
 	private static final class AsmGenerator<C extends OrderingComparator<?>>
 			extends BytecodeGenerator<C, BaseOrderingComparatorSpec<?, ?>> {
 
 		private static final int MAX_SUPPORTED_GETTERS = 32;
-
-		private static final AtomicInteger INSTANCE_COUNTER = new AtomicInteger();
 
 		private static final Method SPEC_TO_SERIALIZED_FORM;
 
@@ -357,7 +353,7 @@ final class OrderingComparators {
 						SerializableOrderingComparator.class,
 						SerializableOrderingComparatorSpec.class,
 						SerializableOrderingCriterion.class,
-						"GeneratedOrderingComparator",
+						"GeneratedSerializableOrderingComparator",
 						staticInitializerBridgeSerializable);
 				GENERATOR = new AsmGenerator<>(generatorConfig);
 				GENERATOR_SERIALIZABLE = new AsmGenerator<>(generatorConfigSerializable);
@@ -374,11 +370,6 @@ final class OrderingComparators {
 
 		private AsmGenerator(GeneratorConfig config) {
 			super(config);
-		}
-
-		@Override
-		protected int classNameSuffix() {
-			return INSTANCE_COUNTER.getAndIncrement();
 		}
 
 		@Override
