@@ -5,14 +5,14 @@ This document describes how to add this library to an existing Maven project.
 ## Without dependencyManagement
 
 Check the [Releases page](https://github.com/jdcmp/jdcmp/releases) and replace
-`<version>0.1</version>` with an appropriate entry.
+`<version>VERSION</version>` with an appropriate entry.
 Place the `<dependency>` block inside `<dependencies>` of your POM (e.g. `pom.xml`).
 
 ```xml
 <dependency>
     <groupId>io.github.jdcmp</groupId>
     <artifactId>comparison-impl-codegen</artifactId>
-    <version>0.1</version>
+    <version>VERSION</version>
 </dependency>
 ```
 
@@ -21,11 +21,11 @@ Place the `<dependency>` block inside `<dependencies>` of your POM (e.g. `pom.xm
 **Step 1:** Use a property inside a top-level POM to define the version once.
 
 Check the [Releases page](https://github.com/jdcmp/jdcmp/releases) and replace
-`0.1` with an appropriate entry.
+`VERSION` with an appropriate entry.
 
 ```xml
 <properties>
-    <jdcmp.version>0.1</jdcmp.version>
+    <jdcmp.version>VERSION</jdcmp.version>
 </properties>
 ```
 
@@ -66,7 +66,8 @@ Check the [Releases page](https://github.com/jdcmp/jdcmp/releases) and replace
     <packaging>pom</packaging>
 
     <properties>
-        <jdcmp.version>0.1</jdcmp.version>
+        <!-- Replace VERSION with an appropriate entry -->
+        <jdcmp.version>VERSION</jdcmp.version>
     </properties>
 
     <dependencyManagement>
