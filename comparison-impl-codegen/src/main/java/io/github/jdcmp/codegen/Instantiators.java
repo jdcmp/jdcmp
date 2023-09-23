@@ -1,45 +1,14 @@
 package io.github.jdcmp.codegen;
 
 import io.github.jdcmp.api.documentation.ThreadSafe;
-import io.github.jdcmp.codegen.customization.AvailableInstantiator;
+import io.github.jdcmp.codegen.Internals.ReflectionFactory;
+import io.github.jdcmp.codegen.Internals.Unsafe;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @ThreadSafe
 final class Instantiators {
-
-	private static final Logger LOGGER = Logger.getLogger(Instantiators.class.getName());
-
-	static List<Instantiator> create(Collection<AvailableInstantiator> available) {
-		ArrayList<Instantiator> instantiators = new ArrayList<>(4);
-		create(available, instantiators, AvailableInstantiator.UNSAFE, UnsafeInstantiator::new);
-		create(available, instantiators, AvailableInstantiator.REFLECTION_FACTORY, ReflectionFactoryInstantiator::new);
-		create(available, instantiators, AvailableInstantiator.REFLECTION_FACTORY, ReflectionFactoryConstructorInstantiator::new);
-		create(available, instantiators, AvailableInstantiator.CONSTRUCTOR, ConstructorInstantiator::new);
-
-		return instantiators;
-	}
-
-	private static void create(
-			Collection<AvailableInstantiator> available,
-			ArrayList<Instantiator> list,
-			AvailableInstantiator wanted,
-			Callable<? extends Instantiator> factory) {
-		if (available.contains(wanted)) {
-			try {
-				list.add(factory.call());
-			} catch (Exception e) {
-				LOGGER.log(Level.FINE, "Failed to load Instantiator: " + wanted, e);
-			}
-		}
-	}
 
 	static final class UnsafeInstantiator implements Instantiator {
 
@@ -73,11 +42,8 @@ final class Instantiators {
 
 		private static final class Holder {
 
-			static final MethodHandle ALLOCATE_INSTANCE;
-
-			static {
-				ALLOCATE_INSTANCE = Internals.Unsafe.Method.ALLOCATE_INSTANCE.find().bindTo(Internals.Unsafe.getInstance());
-			}
+			static final MethodHandle ALLOCATE_INSTANCE
+					= Unsafe.Method.ALLOCATE_INSTANCE.find().bindTo(Unsafe.getInstance());
 
 		}
 
@@ -125,13 +91,9 @@ final class Instantiators {
 
 		private static final class Holder {
 
-			static final MethodHandle NEW_CONSTRUCTOR_FOR_SERIALIZATION;
-
-			static {
-				NEW_CONSTRUCTOR_FOR_SERIALIZATION = Internals.ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION
-						.find()
-						.bindTo(Internals.ReflectionFactory.getInstance());
-			}
+			static final MethodHandle NEW_CONSTRUCTOR_FOR_SERIALIZATION =
+					ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION
+							.find().bindTo(ReflectionFactory.getInstance());
 
 		}
 
@@ -180,13 +142,9 @@ final class Instantiators {
 
 		private static final class Holder {
 
-			static final MethodHandle NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR;
-
-			static {
-				NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR = Internals.ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR
-						.find()
-						.bindTo(Internals.ReflectionFactory.getInstance());
-			}
+			static final MethodHandle NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR =
+					ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR
+							.find().bindTo(ReflectionFactory.getInstance());
 
 		}
 
