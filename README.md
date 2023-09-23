@@ -140,7 +140,7 @@ class Person implements Comparable<Person> {
     }
 
     public int compareTo(Person other) {
-        return COMPARATOR.compareTo(this, other);
+        return COMPARATOR.compare(this, other);
     }
 
 }
