@@ -49,7 +49,7 @@ final class Utils {
 		return classLoader;
 	}
 
-	public static <T> T verify(T value, Predicate<? super T> predicate, Supplier<String> message) {
+	public static <T> @Nullable T verify(@Nullable T value, Predicate<? super @Nullable T> predicate, Supplier<String> message) {
 		if (!predicate.test(value)) {
 			throw new IllegalArgumentException(message.get());
 		}
@@ -71,7 +71,7 @@ final class Utils {
 		return first == null ? alternative : first;
 	}
 
-	public static <T> boolean isEmpty(@Nullable T[] array) {
+	public static <T> boolean isEmpty(@Nullable T @Nullable [] array) {
 		return array == null || array.length == 0;
 	}
 
@@ -88,7 +88,7 @@ final class Utils {
 	}
 
 	@SafeVarargs
-	public static <E extends Enum<E>> @Nullable Set<E> immutableEnumSetOrNull(@Nullable E... values) {
+	public static <E extends Enum<E>> @Nullable Set<E> immutableEnumSetOrNull(E @Nullable ... values) {
 		if (isEmpty(values)) {
 			return null;
 		}
@@ -133,10 +133,6 @@ final class Utils {
 
 	@SafeVarargs
 	public static <T> List<T> nonEmptyArrayListOfNonNulls(@Nullable T... elements) throws IllegalArgumentException {
-		if (elements == null) {
-			return Collections.emptyList();
-		}
-
 		ArrayList<T> list = new ArrayList<>(elements.length);
 		for (T element : elements) {
 			if (element != null) {
