@@ -283,7 +283,7 @@ final class Internals {
 	 */
 	static final class TrustedLookup {
 
-		// A minimalistic class with "static Lookup get() { return Lookup.IMPL_LOOKUP; }", compressed and encoded in base64
+		// A minimalistic class with "static Lookup get() { return Lookup.IMPL_LOOKUP; }", encoded in base64
 		private static final String ACCESSOR = "yv66vgAAADQADgEANWphdmEvbGFuZy9pbnZva2UvTWV0aG9kSGFuZGxlcyQkVHJ1c3RlZExvb2t" +
 				"1cEFjY2Vzc29yBwABAQAQamF2YS9sYW5nL09iamVjdAcAAwEAA2dldAEAKSgpTGphdmEvbGFuZy9pbnZva2UvTWV0aG9kSGFuZGx" +
 				"lcyRMb29rdXA7AQAlamF2YS9sYW5nL2ludm9rZS9NZXRob2RIYW5kbGVzJExvb2t1cAcABwEAC0lNUExfTE9PS1VQAQAnTGphdmE" +
