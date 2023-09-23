@@ -3,8 +3,6 @@ package io.github.jdcmp.codegen;
 
 import io.github.jdcmp.api.documentation.ThreadSafe;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -19,7 +17,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.InflaterInputStream;
 
 @ThreadSafe
 final class Internals {
@@ -287,9 +284,11 @@ final class Internals {
 	static final class TrustedLookup {
 
 		// A minimalistic class with "static Lookup get() { return Lookup.IMPL_LOOKUP; }", compressed and encoded in base64
-		private static final String ACCESSOR = "eNqNjT0OglAQhGcFRQQNVzDBKBWNVlbGRiMEC60NwgsK"
-				+ "hGf4O5extPAAHsoIWljKNN9OZnf2+bo/AEwxIMxCt3TN2E0C85yUPGKmzfIT91du4scs0/VdWmQ58y3Oo+Ky8DyWZTyVQATtd+oc"
-				+ "Q+blEgSCELCcYEwM60/zt3FOGDValCARlLW9tQ6W42z2W8K44QsVMnoyulAI4pL7DEO0IKIWVVkbnYr9ymkVa4k3qNfPhDd4rFKr";
+		private static final String ACCESSOR = "yv66vgAAADQADgEANWphdmEvbGFuZy9pbnZva2UvTWV0aG9kSGFuZGxlcyQkVHJ1c3RlZExvb2t" +
+				"1cEFjY2Vzc29yBwABAQAQamF2YS9sYW5nL09iamVjdAcAAwEAA2dldAEAKSgpTGphdmEvbGFuZy9pbnZva2UvTWV0aG9kSGFuZGx" +
+				"lcyRMb29rdXA7AQAlamF2YS9sYW5nL2ludm9rZS9NZXRob2RIYW5kbGVzJExvb2t1cAcABwEAC0lNUExfTE9PS1VQAQAnTGphdmE" +
+				"vbGFuZy9pbnZva2UvTWV0aG9kSGFuZGxlcyRMb29rdXA7DAAJAAoJAAgACwEABENvZGUAIQACAAQAAAAAAAEACQAFAAYAAQANAAA" +
+				"AEAABAAAAAAAEsgAMsAAAAAAAAA==";
 
 		public static MethodHandle unreflect(Method method) {
 			try {
@@ -301,8 +300,9 @@ final class Internals {
 
 		public static MethodHandles.Lookup get() {
 			try {
-				byte[] bytes = getClassBytes();
-				Class<?> accessorClass = (Class<?>) Holder.DEFINE_ANONYMOUS_CLASS.invokeExact(MethodHandles.class, bytes, (Object[]) null);
+				byte[] bytes = Base64.getDecoder().decode(ACCESSOR);
+				Class<?> accessorClass = (Class<?>) Holder.DEFINE_ANONYMOUS_CLASS
+						.invokeExact(MethodHandles.class, bytes, (Object[]) null);
 				Method accessorMethod = accessorClass.getDeclaredMethod("get");
 
 				return (MethodHandles.Lookup) accessorMethod.invoke(null);
@@ -313,24 +313,10 @@ final class Internals {
 			}
 		}
 
-		private static byte[] getClassBytes() throws IOException {
-			byte[] bytes = new byte[301];
-			try (InflaterInputStream iis = new InflaterInputStream(new ByteArrayInputStream(Base64.getDecoder().decode(ACCESSOR)))) {
-				if (iis.read(bytes) != 301) {
-					throw new RuntimeException();
-				}
-			}
-			return bytes;
-		}
-
 		private static final class Holder {
 
-			private static final MethodHandle DEFINE_ANONYMOUS_CLASS;
-
-			static {
-				Object unsafe = Unsafe.getInstance();
-				DEFINE_ANONYMOUS_CLASS = Unsafe.Method.DEFINE_ANONYMOUS_CLASS.find().bindTo(unsafe);
-			}
+			static final MethodHandle DEFINE_ANONYMOUS_CLASS
+					= Unsafe.Method.DEFINE_ANONYMOUS_CLASS.find().bindTo(Unsafe.getInstance());
 
 		}
 
