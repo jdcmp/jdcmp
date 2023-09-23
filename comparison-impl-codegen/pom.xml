@@ -47,7 +47,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>${maven-shade-plugin.version}</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -55,7 +54,9 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<createDependencyReducedPom>true</createDependencyReducedPom>
+							<useDependencyReducedPomInJar>true</useDependencyReducedPomInJar>
+							<dependencyReducedPomLocation>${basedir}/target/dependency-reduced-pom.xml</dependencyReducedPomLocation>
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
@@ -65,9 +66,10 @@
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
 							</transformers>
 							<artifactSet>
-								<excludes>
-									<exclude>io.github.jdcmp:comparison-api</exclude>
-								</excludes>
+								<includes>
+									<include>io.github.jdcmp:comparison-impl-codegen</include>
+									<include>org.ow2.asm:*</include>
+								</includes>
 							</artifactSet>
 							<relocations>
 								<relocation>
