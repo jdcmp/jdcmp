@@ -41,7 +41,8 @@ final class Fallbacks {
 	}
 
 	@ThreadSafe
-	static final class SerializableIdentityFallback<T> extends AbstractIdentityFallback<T> implements SerializableEqualityComparator<T> {
+	static final class SerializableIdentityFallback<T> extends AbstractIdentityFallback<T>
+			implements SerializableEqualityComparator<T> {
 
 		private static final long serialVersionUID = 1L;
 
@@ -86,7 +87,8 @@ final class Fallbacks {
 	}
 
 	@ThreadSafe
-	static final class NaturalOrderFallback<T extends Comparable<? super T>> extends AbstractNaturalOrderFallback<T> implements OrderingComparator<T> {
+	static final class NaturalOrderFallback<T extends Comparable<? super T>> extends AbstractNaturalOrderFallback<T>
+			implements OrderingComparator<T> {
 
 		NaturalOrderFallback(OrderingComparatorSpec<T> spec) {
 			super(spec);
@@ -149,7 +151,8 @@ final class Fallbacks {
 
 	}
 
-	private static abstract class AbstractIdentityOrderFallback<T> extends AbstractIdentityFallback<T> implements OrderingComparator<T> {
+	private static abstract class AbstractIdentityOrderFallback<T> extends AbstractIdentityFallback<T>
+			implements OrderingComparator<T> {
 
 		protected AbstractIdentityOrderFallback(Spec<?, ?> spec) {
 			super(spec);
@@ -171,7 +174,8 @@ final class Fallbacks {
 
 	}
 
-	private static abstract class AbstractNaturalOrderFallback<T extends Comparable<? super T>> implements OrderingComparator<T> {
+	private static abstract class AbstractNaturalOrderFallback<T extends Comparable<? super T>>
+			implements OrderingComparator<T> {
 
 		private final Class<T> classToCompare;
 

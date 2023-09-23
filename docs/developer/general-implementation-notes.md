@@ -33,3 +33,11 @@ This document is meant to summarize and clarify development practices.
 	* As few types as possible should be publicly exposed.
 	* Internal implementation details must not be publicly exposed, even if it means putting
 	  everything into a single package.
+
+## Immutability
+
+* Any untrusted input should be copied to an immutable snapshot. This reduces the likelihood of
+  interferences caused by either concurrent modifications made by the caller, or unintended
+  modifications caused by bugs in this project.
+* When passing input between internal classes of this project, immutability may be neglected as a 
+  micro-optimization that reduces the number of copying operations and allocations.

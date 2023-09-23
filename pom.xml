@@ -9,7 +9,7 @@
 	<version>0.2</version>
 	<packaging>pom</packaging>
 
-	<name>jdcmp</name>
+	<name>comparison</name>
 	<description>Declarative Comparisons - hashCode, equals, compareTo</description>
 	<url>https://github.com/jdcmp/jdcmp</url>
 
@@ -71,14 +71,15 @@
 		<maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
 		<maven-install-plugin.version>3.1.1</maven-install-plugin.version>
 		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>
-		<maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
+		<maven-javadoc-plugin.version>3.6.0</maven-javadoc-plugin.version>
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
 		<maven-shade-plugin.version>3.5.0</maven-shade-plugin.version>
 		<license-maven-plugin.version>2.2.0</license-maven-plugin.version>
 		<maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
 		<maven-release-plugin.version>3.0.1</maven-release-plugin.version>
-		<versions-maven-plugin.version>2.16.0</versions-maven-plugin.version>
+		<versions-maven-plugin.version>2.16.1</versions-maven-plugin.version>
 		<nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
+		<maven-enforcer-plugin.version>3.4.1</maven-enforcer-plugin.version>
 	</properties>
 
 	<modules>
@@ -171,7 +172,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
 					<release>8</release>
 					<source>1.8</source>
@@ -295,6 +295,42 @@
 					<autoReleaseAfterClose>false</autoReleaseAfterClose>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-plugin-versions</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>3.7</version>
+								</requireMavenVersion>
+								<requirePluginVersions>
+									<message>Best Practice is to always define plugin versions!</message>
+									<banLatest>true</banLatest>
+									<banRelease>true</banRelease>
+									<banSnapshots>true</banSnapshots>
+									<phases>clean,deploy,site</phases>
+									<additionalPlugins>
+									</additionalPlugins>
+									<unCheckedPluginList>
+										org.apache.maven.plugins:maven-clean-plugin,
+										org.apache.maven.plugins:maven-deploy-plugin,
+										org.apache.maven.plugins:maven-eclipse-plugin,
+										org.apache.maven.plugins:maven-enforcer-plugin,
+										org.apache.maven.plugins:maven-idea-plugin,
+										org.apache.maven.plugins:maven-site-plugin
+									</unCheckedPluginList>
+								</requirePluginVersions>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -362,6 +398,11 @@
 					<groupId>org.sonatype.plugins</groupId>
 					<artifactId>nexus-staging-maven-plugin</artifactId>
 					<version>${nexus-staging-maven-plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>${maven-enforcer-plugin.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>

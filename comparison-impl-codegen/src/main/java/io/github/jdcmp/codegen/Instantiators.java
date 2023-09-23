@@ -1,47 +1,16 @@
 package io.github.jdcmp.codegen;
 
 import io.github.jdcmp.api.documentation.ThreadSafe;
-import io.github.jdcmp.codegen.customization.AvailableInstantiator;
+import io.github.jdcmp.codegen.Internals.ReflectionFactory;
+import io.github.jdcmp.codegen.Internals.Unsafe;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @ThreadSafe
 final class Instantiators {
 
-	private static final Logger LOGGER = Logger.getLogger(Instantiators.class.getName());
-
-	static List<Instantiator> create(Collection<AvailableInstantiator> available) {
-		ArrayList<Instantiator> instantiators = new ArrayList<>(4);
-		create(available, instantiators, AvailableInstantiator.UNSAFE, UnsafeInstantiator::new);
-		create(available, instantiators, AvailableInstantiator.REFLECTION_FACTORY, ReflectionFactoryInstantiator::new);
-		create(available, instantiators, AvailableInstantiator.REFLECTION_FACTORY, ReflectionFactoryConstructorInstantiator::new);
-		create(available, instantiators, AvailableInstantiator.CONSTRUCTOR, ConstructorInstantiator::new);
-
-		return instantiators;
-	}
-
-	private static void create(
-			Collection<AvailableInstantiator> available,
-			ArrayList<Instantiator> list,
-			AvailableInstantiator wanted,
-			Callable<? extends Instantiator> factory) {
-		if (available.contains(wanted)) {
-			try {
-				list.add(factory.call());
-			} catch (Exception e) {
-				LOGGER.log(Level.FINE, "Failed to load Instantiator: " + wanted, e);
-			}
-		}
-	}
-
-	private static final class UnsafeInstantiator implements Instantiator {
+	static final class UnsafeInstantiator implements Instantiator {
 
 		UnsafeInstantiator() {
 			Utils.initializeClass(Holder.class);
@@ -53,7 +22,7 @@ final class Instantiators {
 		}
 
 		@Override
-		public boolean supportsVmAnonOrHiddenClasses() {
+		public boolean supports(ClassDefiner classDefiner) {
 			return true;
 		}
 
@@ -73,17 +42,14 @@ final class Instantiators {
 
 		private static final class Holder {
 
-			static final MethodHandle ALLOCATE_INSTANCE;
-
-			static {
-				ALLOCATE_INSTANCE = Internals.Unsafe.Method.ALLOCATE_INSTANCE.find().bindTo(Internals.Unsafe.getInstance());
-			}
+			static final MethodHandle ALLOCATE_INSTANCE
+					= Unsafe.Method.ALLOCATE_INSTANCE.find().bindTo(Unsafe.getInstance());
 
 		}
 
 	}
 
-	private static final class ReflectionFactoryInstantiator implements Instantiator {
+	static final class ReflectionFactoryInstantiator implements Instantiator {
 
 		ReflectionFactoryInstantiator() {
 			Utils.initializeClass(Holder.class);
@@ -95,8 +61,8 @@ final class Instantiators {
 		}
 
 		@Override
-		public boolean supportsVmAnonOrHiddenClasses() {
-			return false;
+		public boolean supports(ClassDefiner classDefiner) {
+			return !classDefiner.producesVmAnonymousOrHiddenClasses();
 		}
 
 		@SuppressWarnings("unchecked")
@@ -125,19 +91,15 @@ final class Instantiators {
 
 		private static final class Holder {
 
-			static final MethodHandle NEW_CONSTRUCTOR_FOR_SERIALIZATION;
-
-			static {
-				MethodHandle newConstructorForSerialization = Internals.ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION.find();
-				Object reflectionFactory = Internals.ReflectionFactory.getInstance();
-				NEW_CONSTRUCTOR_FOR_SERIALIZATION = newConstructorForSerialization.bindTo(reflectionFactory);
-			}
+			static final MethodHandle NEW_CONSTRUCTOR_FOR_SERIALIZATION =
+					ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION
+							.find().bindTo(ReflectionFactory.getInstance());
 
 		}
 
 	}
 
-	private static final class ReflectionFactoryConstructorInstantiator implements Instantiator {
+	static final class ReflectionFactoryConstructorInstantiator implements Instantiator {
 
 		ReflectionFactoryConstructorInstantiator() {
 			Utils.initializeClass(Holder.class);
@@ -149,8 +111,8 @@ final class Instantiators {
 		}
 
 		@Override
-		public boolean supportsVmAnonOrHiddenClasses() {
-			return false;
+		public boolean supports(ClassDefiner classDefiner) {
+			return !classDefiner.producesVmAnonymousOrHiddenClasses();
 		}
 
 		@SuppressWarnings("unchecked")
@@ -180,20 +142,15 @@ final class Instantiators {
 
 		private static final class Holder {
 
-			static final MethodHandle NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR;
-
-			static {
-				Object reflectionFactory = Internals.ReflectionFactory.getInstance();
-				NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR = Internals.ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR
-						.find()
-						.bindTo(reflectionFactory);
-			}
+			static final MethodHandle NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR =
+					ReflectionFactory.Method.NEW_CONSTRUCTOR_FOR_SERIALIZATION_CONSTRUCTOR
+							.find().bindTo(ReflectionFactory.getInstance());
 
 		}
 
 	}
 
-	private static final class ConstructorInstantiator implements Instantiator {
+	static final class ConstructorInstantiator implements Instantiator {
 
 		@Override
 		public boolean requiresConstructor() {
@@ -201,7 +158,7 @@ final class Instantiators {
 		}
 
 		@Override
-		public boolean supportsVmAnonOrHiddenClasses() {
+		public boolean supports(ClassDefiner classDefiner) {
 			return true;
 		}
 

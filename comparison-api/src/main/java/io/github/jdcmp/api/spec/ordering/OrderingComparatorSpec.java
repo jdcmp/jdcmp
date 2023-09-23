@@ -8,6 +8,6 @@ import io.github.jdcmp.api.getter.OrderingCriterion;
  *
  * @param <T> Type whose instances can be compared
  */
-public interface OrderingComparatorSpec<T> extends BaseOrderingComparatorSpec<T, OrderingCriterion<T>> {
+public interface OrderingComparatorSpec<T> extends BaseOrderingComparatorSpec<T, OrderingCriterion<? super T>> {
 
 }

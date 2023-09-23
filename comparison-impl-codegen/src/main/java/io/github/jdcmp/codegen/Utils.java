@@ -6,7 +6,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -42,7 +49,7 @@ final class Utils {
 		return classLoader;
 	}
 
-	public static <T> T verify(T value, Predicate<? super T> predicate, Supplier<String> message) {
+	public static <T> @Nullable T verify(@Nullable T value, Predicate<? super @Nullable T> predicate, Supplier<String> message) {
 		if (!predicate.test(value)) {
 			throw new IllegalArgumentException(message.get());
 		}
@@ -64,7 +71,7 @@ final class Utils {
 		return first == null ? alternative : first;
 	}
 
-	public static <T> boolean isEmpty(@Nullable T[] array) {
+	public static <T> boolean isEmpty(@Nullable T @Nullable [] array) {
 		return array == null || array.length == 0;
 	}
 
@@ -81,7 +88,7 @@ final class Utils {
 	}
 
 	@SafeVarargs
-	public static <E extends Enum<E>> @Nullable Set<E> immutableEnumSetOrNull(@Nullable E... values) {
+	public static <E extends Enum<E>> @Nullable Set<E> immutableEnumSetOrNull(E @Nullable ... values) {
 		if (isEmpty(values)) {
 			return null;
 		}
@@ -114,8 +121,24 @@ final class Utils {
 		return Collections.unmodifiableList(arrayList(iterable));
 	}
 
-	public static <T> List<T> immutableArrayListNonEmpty(Iterable<? extends T> iterable) throws NullPointerException {
+	public static <T> List<T> immutableArrayListNonEmpty(Iterable<? extends T> iterable) throws NullPointerException, IllegalArgumentException {
 		List<T> list = immutableArrayList(iterable);
+
+		if (list.isEmpty()) {
+			throw new IllegalArgumentException("List must not be empty");
+		}
+
+		return list;
+	}
+
+	@SafeVarargs
+	public static <T> List<T> nonEmptyArrayListOfNonNulls(@Nullable T... elements) throws IllegalArgumentException {
+		ArrayList<T> list = new ArrayList<>(elements.length);
+		for (T element : elements) {
+			if (element != null) {
+				list.add(element);
+			}
+		}
 
 		if (list.isEmpty()) {
 			throw new IllegalArgumentException("List must not be empty");

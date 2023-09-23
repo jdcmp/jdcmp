@@ -16,14 +16,21 @@ import io.github.jdcmp.api.getter.SerializableOrderingCriterion;
 import io.github.jdcmp.api.serialization.EqualityComparatorSerializedForm;
 import io.github.jdcmp.api.serialization.OrderingComparatorSerializedForm;
 import io.github.jdcmp.api.serialization.SerializationSupport;
+import io.github.jdcmp.api.spec.equality.BaseEqualityComparatorSpec;
 import io.github.jdcmp.api.spec.equality.EqualityComparatorSpec;
 import io.github.jdcmp.api.spec.equality.SerializableEqualityComparatorSpec;
+import io.github.jdcmp.api.spec.ordering.BaseOrderingComparatorSpec;
 import io.github.jdcmp.api.spec.ordering.OrderingComparatorSpec;
 import io.github.jdcmp.api.spec.ordering.SerializableOrderingComparatorSpec;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandles.Lookup;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A static factory that provides convenience methods for creating immutable {@link Spec Specs}.
@@ -34,21 +41,21 @@ public final class Specs {
 	/**
 	 * Creates an immutable spec for {@link EqualityComparator}.
 	 *
-	 * @param classToCompare Type whose instances can be compared
+	 * @param classToCompare    Type whose instances can be compared
 	 * @param getHashParameters Customization for hashCode
-	 * @param strictTypes Strict type checking flag
-	 * @param getters Criteria for comparisons
-	 * @param fallbackMode Missing criteria handling; nullable
-	 * @param lookup An access context; nullable
+	 * @param strictTypes       Strict type checking flag
+	 * @param getters           Criteria for comparisons
+	 * @param fallbackMode      Missing criteria handling; nullable
+	 * @param lookup            An access context; nullable
+	 * @param <T>               Type whose instances can be compared
 	 * @return An immutable spec
-	 * @param <T> Type whose instances can be compared
 	 */
 	public static <T> EqualityComparatorSpec<T> equality(
 			Class<T> classToCompare,
 			HashParameters getHashParameters,
 			boolean strictTypes,
 			Iterable<? extends EqualityCriterion<? super T>> getters,
-			@Nullable  EqualityFallbackMode fallbackMode,
+			@Nullable EqualityFallbackMode fallbackMode,
 			@Nullable Lookup lookup) {
 		return new ImmutableEqualityComparatorSpec<>(
 				classToCompare,
@@ -63,8 +70,8 @@ public final class Specs {
 	 * Creates an immutable copy of the given spec.
 	 *
 	 * @param spec Spec to be copied
+	 * @param <T>  Type whose instances can be compared
 	 * @return An immutable copy
-	 * @param <T> Type whose instances can be compared
 	 */
 	public static <T> EqualityComparatorSpec<T> equality(EqualityComparatorSpec<T> spec) {
 		return equality(
@@ -81,8 +88,8 @@ public final class Specs {
 	 * Creates an immutable copy of the given spec.
 	 *
 	 * @param spec Spec to be copied
+	 * @param <T>  Type whose instances can be compared
 	 * @return An immutable copy
-	 * @param <T> Type whose instances can be compared
 	 */
 	public static <T> SerializableEqualityComparatorSpec<T> equalitySerializable(
 			SerializableEqualityComparatorSpec<T> spec) {
@@ -99,14 +106,14 @@ public final class Specs {
 	/**
 	 * Creates an immutable spec for {@link SerializableEqualityComparator}.
 	 *
-	 * @param classToCompare Type whose instances can be compared
+	 * @param classToCompare    Type whose instances can be compared
 	 * @param getHashParameters Customization for hashCode
-	 * @param strictTypes Strict type checking flag
-	 * @param getters Criteria for comparisons
-	 * @param fallbackMode Missing criteria handling
-	 * @param lookup A nullable access context
+	 * @param strictTypes       Strict type checking flag
+	 * @param getters           Criteria for comparisons
+	 * @param fallbackMode      Missing criteria handling
+	 * @param lookup            A nullable access context
+	 * @param <T>               Type whose instances can be compared
 	 * @return An immutable spec
-	 * @param <T> Type whose instances can be compared
 	 */
 	public static <T> SerializableEqualityComparatorSpec<T> equalitySerializable(
 			Class<T> classToCompare,
@@ -127,15 +134,15 @@ public final class Specs {
 	/**
 	 * Creates an immutable spec for {@link OrderingComparator}.
 	 *
-	 * @param classToCompare Type whose instances can be compared
+	 * @param classToCompare    Type whose instances can be compared
 	 * @param getHashParameters Customization for hashCode
-	 * @param strictTypes Strict type checking flag
-	 * @param getters Criteria for comparisons
-	 * @param nullHandling How nulls are handled
-	 * @param fallbackMode Missing criteria handling
-	 * @param lookup A nullable access context
+	 * @param strictTypes       Strict type checking flag
+	 * @param getters           Criteria for comparisons
+	 * @param nullHandling      How nulls are handled
+	 * @param fallbackMode      Missing criteria handling
+	 * @param lookup            A nullable access context
+	 * @param <T>               Type whose instances can be compared
 	 * @return An immutable spec
-	 * @param <T> Type whose instances can be compared
 	 */
 	public static <T> OrderingComparatorSpec<T> ordering(
 			Class<T> classToCompare,
@@ -159,8 +166,8 @@ public final class Specs {
 	 * Creates an immutable copy of the given spec.
 	 *
 	 * @param spec Spec to be copied
+	 * @param <T>  Type whose instances can be compared
 	 * @return An immutable copy
-	 * @param <T> Type whose instances can be compared
 	 */
 	public static <T> OrderingComparatorSpec<T> ordering(OrderingComparatorSpec<T> spec) {
 		return ordering(
@@ -177,15 +184,15 @@ public final class Specs {
 	/**
 	 * Creates an immutable spec for {@link SerializableOrderingComparator}.
 	 *
-	 * @param classToCompare Type whose instances can be compared
+	 * @param classToCompare    Type whose instances can be compared
 	 * @param getHashParameters Customization for hashCode
-	 * @param strictTypes Strict type checking flag
-	 * @param getters Criteria for comparisons
-	 * @param nullHandling How nulls are handled
-	 * @param fallbackMode Missing criteria handling
-	 * @param lookup A nullable access context
+	 * @param strictTypes       Strict type checking flag
+	 * @param getters           Criteria for comparisons
+	 * @param nullHandling      How nulls are handled
+	 * @param fallbackMode      Missing criteria handling
+	 * @param lookup            A nullable access context
+	 * @param <T>               Type whose instances can be compared
 	 * @return An immutable spec
-	 * @param <T> Type whose instances can be compared
 	 */
 	public static <T> SerializableOrderingComparatorSpec<T> orderingSerializable(
 			Class<T> classToCompare,
@@ -209,8 +216,8 @@ public final class Specs {
 	 * Creates an immutable copy of the given spec.
 	 *
 	 * @param spec Spec to be copied
+	 * @param <T>  Type whose instances can be compared
 	 * @return An immutable copy
-	 * @param <T> Type whose instances can be compared
 	 */
 	public static <T> SerializableOrderingComparatorSpec<T> orderingSerializable(SerializableOrderingComparatorSpec<T> spec) {
 		return orderingSerializable(
@@ -224,10 +231,11 @@ public final class Specs {
 		);
 	}
 
-	private static final class ImmutableEqualityComparatorSpec<T> extends AbstractEqualitySpec<T, EqualityCriterion<T>>
+	private static final class ImmutableEqualityComparatorSpec<T>
+			extends AbstractEqualitySpec<T, EqualityCriterion<? super T>>
 			implements EqualityComparatorSpec<T> {
 
-		private final List<? extends EqualityCriterion<T>> getters;
+		private final List<? extends EqualityCriterion<? super T>> getters;
 
 		ImmutableEqualityComparatorSpec(
 				Class<T> classToCompare,
@@ -237,26 +245,16 @@ public final class Specs {
 				@Nullable EqualityFallbackMode fallbackMode,
 				@Nullable Lookup lookup) {
 			super(classToCompare, hashParameters, false, strictTypes, fallbackMode, lookup);
-			this.getters = Collections.unmodifiableList(asCastedList(getters));
-		}
-
-		@SuppressWarnings("unchecked")
-		private List<EqualityCriterion<T>> asCastedList(Iterable<? extends EqualityCriterion<? super T>> getters) {
-			ArrayList<EqualityCriterion<T>> list = new ArrayList<>();
-			for (EqualityCriterion<? super T> getter : getters) {
-				list.add((EqualityCriterion<T>) Objects.requireNonNull(getter));
-			}
-
-			return list;
+			this.getters = immutableList(getters);
 		}
 
 		@Override
-		public Collection<? extends EqualityCriterion<T>> getGetters() {
+		public Collection<? extends EqualityCriterion<? super T>> getGetters() {
 			return getters;
 		}
 
 		@Override
-		public List<? extends EqualityCriterion<T>> getGettersAsList() {
+		public List<? extends EqualityCriterion<? super T>> getGettersAsList() {
 			return getters;
 		}
 
@@ -275,10 +273,10 @@ public final class Specs {
 	}
 
 	private static final class ImmutableSerializableEqualityComparatorSpec<T>
-			extends AbstractEqualitySpec<T, SerializableEqualityCriterion<T>>
+			extends AbstractEqualitySpec<T, SerializableEqualityCriterion<? super T>>
 			implements SerializableEqualityComparatorSpec<T> {
 
-		private final List<? extends SerializableEqualityCriterion<T>> getters;
+		private final List<? extends SerializableEqualityCriterion<? super T>> getters;
 
 		ImmutableSerializableEqualityComparatorSpec(
 				Class<T> classToCompare,
@@ -288,27 +286,16 @@ public final class Specs {
 				@Nullable EqualityFallbackMode fallbackMode,
 				@Nullable Lookup lookup) {
 			super(classToCompare, hashParameters, true, strictTypes, fallbackMode, lookup);
-			this.getters = Collections.unmodifiableList(asCastedList(getters));
-		}
-
-		@SuppressWarnings("unchecked")
-		private List<SerializableEqualityCriterion<T>> asCastedList(
-				Iterable<? extends SerializableEqualityCriterion<? super T>> getters) {
-			ArrayList<SerializableEqualityCriterion<T>> list = new ArrayList<>();
-			for (SerializableEqualityCriterion<? super T> getter : getters) {
-				list.add((SerializableEqualityCriterion<T>) Objects.requireNonNull(getter));
-			}
-
-			return list;
+			this.getters = immutableList(getters);
 		}
 
 		@Override
-		public Collection<? extends SerializableEqualityCriterion<T>> getGetters() {
+		public Collection<? extends SerializableEqualityCriterion<? super T>> getGetters() {
 			return getters;
 		}
 
 		@Override
-		public List<? extends SerializableEqualityCriterion<T>> getGettersAsList() {
+		public List<? extends SerializableEqualityCriterion<? super T>> getGettersAsList() {
 			return getters;
 		}
 
@@ -330,10 +317,11 @@ public final class Specs {
 		}
 	}
 
-	private static final class ImmutableOrderingComparatorSpec<T> extends AbstractOrderingSpec<T, OrderingCriterion<T>>
+	private static final class ImmutableOrderingComparatorSpec<T>
+			extends AbstractOrderingSpec<T, OrderingCriterion<? super T>>
 			implements OrderingComparatorSpec<T> {
 
-		private final List<? extends OrderingCriterion<T>> getters;
+		private final List<? extends OrderingCriterion<? super T>> getters;
 
 		public ImmutableOrderingComparatorSpec(
 				Class<T> classToCompare,
@@ -344,26 +332,16 @@ public final class Specs {
 				@Nullable OrderingFallbackMode fallbackMode,
 				@Nullable Lookup lookup) {
 			super(classToCompare, hashParameters, false, strictTypes, nullHandling, fallbackMode, lookup);
-			this.getters = Collections.unmodifiableList(asCastedList(getters));
-		}
-
-		@SuppressWarnings("unchecked")
-		private List<OrderingCriterion<T>> asCastedList(Iterable<? extends OrderingCriterion<? super T>> getters) {
-			ArrayList<OrderingCriterion<T>> list = new ArrayList<>();
-			for (OrderingCriterion<? super T> getter : getters) {
-				list.add((OrderingCriterion<T>) Objects.requireNonNull(getter));
-			}
-
-			return list;
+			this.getters = immutableList(getters);
 		}
 
 		@Override
-		public Collection<? extends OrderingCriterion<T>> getGetters() {
+		public Collection<? extends OrderingCriterion<? super T>> getGetters() {
 			return getters;
 		}
 
 		@Override
-		public List<? extends OrderingCriterion<T>> getGettersAsList() {
+		public List<? extends OrderingCriterion<? super T>> getGettersAsList() {
 			return getters;
 		}
 
@@ -382,10 +360,10 @@ public final class Specs {
 	}
 
 	private static final class ImmutableSerializableOrderingComparatorSpec<T>
-			extends AbstractOrderingSpec<T, SerializableOrderingCriterion<T>>
+			extends AbstractOrderingSpec<T, SerializableOrderingCriterion<? super T>>
 			implements SerializableOrderingComparatorSpec<T> {
 
-		private final List<? extends SerializableOrderingCriterion<T>> getters;
+		private final List<? extends SerializableOrderingCriterion<? super T>> getters;
 
 		ImmutableSerializableOrderingComparatorSpec(
 				Class<T> classToCompare,
@@ -396,27 +374,16 @@ public final class Specs {
 				@Nullable OrderingFallbackMode fallbackMode,
 				@Nullable Lookup lookup) {
 			super(classToCompare, hashParameters, true, strictTypes, nullHandling, fallbackMode, lookup);
-			this.getters = Collections.unmodifiableList(asCastedList(getters));
-		}
-
-		@SuppressWarnings("unchecked")
-		private List<SerializableOrderingCriterion<T>> asCastedList(
-				Iterable<? extends SerializableOrderingCriterion<? super T>> getters) {
-			ArrayList<SerializableOrderingCriterion<T>> list = new ArrayList<>();
-			for (SerializableOrderingCriterion<? super T> getter : getters) {
-				list.add((SerializableOrderingCriterion<T>) Objects.requireNonNull(getter));
-			}
-
-			return list;
+			this.getters = immutableList(getters);
 		}
 
 		@Override
-		public Collection<? extends SerializableOrderingCriterion<T>> getGetters() {
+		public Collection<? extends SerializableOrderingCriterion<? super T>> getGetters() {
 			return getters;
 		}
 
 		@Override
-		public List<? extends SerializableOrderingCriterion<T>> getGettersAsList() {
+		public List<? extends SerializableOrderingCriterion<? super T>> getGettersAsList() {
 			return getters;
 		}
 
@@ -441,7 +408,8 @@ public final class Specs {
 	}
 
 	private static abstract class AbstractOrderingSpec<T, G extends OrderingCriterion<? super T>>
-			extends AbstractSpec<T, G> {
+			extends AbstractSpec<T, G>
+			implements BaseOrderingComparatorSpec<T, G> {
 
 		protected final NullHandling nullHandling;
 
@@ -471,7 +439,8 @@ public final class Specs {
 	}
 
 	private static abstract class AbstractEqualitySpec<T, G extends EqualityCriterion<? super T>>
-			extends AbstractSpec<T, G> {
+			extends AbstractSpec<T, G>
+			implements BaseEqualityComparatorSpec<T, G> {
 
 		protected final @Nullable EqualityFallbackMode fallbackMode;
 
@@ -539,6 +508,25 @@ public final class Specs {
 			return Optional.ofNullable(lookup);
 		}
 
+	}
+
+	static <T> List<T> immutableList(Iterable<? extends T> iterable) {
+		if (iterable instanceof Collection) {
+			Collection<? extends T> col = (Collection<? extends T>) iterable;
+			ArrayList<T> list = new ArrayList<>(col);
+			for (T element : list) {
+				Objects.requireNonNull(element);
+			}
+
+			return Collections.unmodifiableList(list);
+		}
+
+		ArrayList<T> list = new ArrayList<>();
+		for (T element : iterable) {
+			list.add(Objects.requireNonNull(element));
+		}
+
+		return Collections.unmodifiableList(list);
 	}
 
 	private Specs() {

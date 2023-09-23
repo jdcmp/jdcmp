@@ -1,12 +1,15 @@
 package io.github.jdcmp.api.builder.ordering;
 
+import io.github.jdcmp.api.comparator.ordering.OrderingComparator;
+
 /**
  * The fallback is used if no criteria (getters) are configured.
  */
 public enum OrderingFallbackMode {
 
 	/**
-	 * Falls back to identity comparison (e.g. <code>x == y</code>).
+	 * Falls back to identity comparison (e.g. <code>x == y</code>). This results in inconsistent behavior between
+	 * {@link OrderingComparator#areEqual(Object, Object)} and {@link OrderingComparator#compare(Object, Object)}.
 	 */
 	IDENTITY {
 		@Override

@@ -3,7 +3,12 @@ package io.github.jdcmp.api;
 import io.github.jdcmp.api.documentation.ThreadSafe;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @ThreadSafe
 final class Utils {

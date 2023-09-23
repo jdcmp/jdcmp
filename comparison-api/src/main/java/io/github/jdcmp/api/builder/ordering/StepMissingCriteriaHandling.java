@@ -79,7 +79,8 @@ public interface StepMissingCriteriaHandling {
 	<T extends Comparable<? super T>> OrderingComparatorBuilder<T> fallbackToNaturalOrdering(Class<T> classToCompare);
 
 	/**
-	 * Configures a fallback to be used in the absence of getters.
+	 * Configures an identity fallback to be used in the absence of getters. This results in inconsistent behavior between
+	 * {@link OrderingComparator#areEqual(Object, Object)} and {@link OrderingComparator#compare(Object, Object)}.
 	 *
 	 * <ul>
 	 *     <li>An identity check is used to determine equality. That is, the method

@@ -8,6 +8,6 @@ import io.github.jdcmp.api.getter.EqualityCriterion;
  *
  * @param <T> Type whose instances can be compared
  */
-public interface EqualityComparatorSpec<T> extends BaseEqualityComparatorSpec<T, EqualityCriterion<T>> {
+public interface EqualityComparatorSpec<T> extends BaseEqualityComparatorSpec<T, EqualityCriterion<? super T>> {
 
 }

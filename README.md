@@ -17,12 +17,12 @@ jdcmp is an open-source library for Java™ that helps developers implement cons
 The following table lists runtimes that are known to be compatible with the default implementation 
 `comparison-impl-codegen`.  
 
-| Flavor              | Versions |
-|---------------------|----------|
-| Adoptium OpenJDK    | 8 - 22   |
-| IBM Semeru (OpenJ9) | 17 - 20  |
-| GraalVM CE          | 17, 20   |
-| Oracle GraalVM      | 17, 20   |
+| Flavor              | Versions   |
+|---------------------|------------|
+| OpenJDK             | 8 - 22     |
+| IBM Semeru (OpenJ9) | 17 - 20    |
+| GraalVM CE          | 17, 20, 21 |
+| Oracle GraalVM      | 17, 20, 21 |
 
 The following features are untested:
 
@@ -34,17 +34,17 @@ The following features are untested:
 ### Maven
 
 Check the [Releases page](https://github.com/jdcmp/jdcmp/releases) and replace
-`<version>0.1</version>` with an appropriate entry.
+`<version>VERSION</version>` with an appropriate entry.
 
 **Quickstart**
 
-Add this to `<dependencies>` inside your POM (e.g. `pom.xml`):
+Add this to `<dependencies>` inside your POM (e.g. `pom.xml`) and replace `VERSION`:
 
 ```xml
 <dependency>
     <groupId>io.github.jdcmp</groupId>
     <artifactId>comparison-impl-codegen</artifactId>
-    <version>0.1</version>
+    <version>VERSION</version> <!-- See https://github.com/jdcmp/jdcmp/releases -->
 </dependency>
 ```
 
@@ -140,7 +140,7 @@ class Person implements Comparable<Person> {
     }
 
     public int compareTo(Person other) {
-        return COMPARATOR.compareTo(this, other);
+        return COMPARATOR.compare(this, other);
     }
 
 }

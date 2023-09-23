@@ -5,3 +5,4 @@
 * [General implementation notes](general-implementation-notes.md)
 * [Testing](testing.md)
 * [Benchmarking](benchmarking.md)
+* [Updating dependencies](updating-dependencies.md)

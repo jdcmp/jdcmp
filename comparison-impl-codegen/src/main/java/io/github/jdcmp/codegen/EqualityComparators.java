@@ -31,7 +31,10 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static org.objectweb.asm.Opcodes.ARETURN;
+import static org.objectweb.asm.Opcodes.GETSTATIC;
+import static org.objectweb.asm.Opcodes.INVOKEINTERFACE;
 
 @ThreadSafe
 final class EqualityComparators {
@@ -50,7 +53,7 @@ final class EqualityComparators {
 			if (userSpec.hasNoGetters()) {
 				return useFallback(userSpec);
 			} else if (AsmGenerator.supports(userSpec)) {
-				return AsmGenerator.generate(userSpec, implSpec);
+				return AsmGenerator.GENERATOR.generate(userSpec, implSpec);
 			}
 
 			return new ComparatorN<>(userSpec);
@@ -75,7 +78,7 @@ final class EqualityComparators {
 			if (userSpec.hasNoGetters()) {
 				return useFallback(userSpec);
 			} else if (AsmGenerator.supports(userSpec)) {
-				return AsmGenerator.generateSerializable(userSpec, implSpec);
+				return AsmGenerator.GENERATOR_SERIALIZABLE.generate(userSpec, implSpec);
 			}
 
 			return new SerializableComparatorN<>(userSpec, implSpec);
@@ -192,42 +195,46 @@ final class EqualityComparators {
 
 	}
 
-	@NotThreadSafe
-	private static final class AsmGenerator<T, C extends EqualityComparator<T>, G extends EqualityCriterion<T>>
-			extends AbstractAsmGenerator<C, BaseEqualityComparatorSpec<T, G>> {
+	@ThreadSafe
+	private static final class AsmGenerator<C extends EqualityComparator<?>>
+			extends BytecodeGenerator<C, BaseEqualityComparatorSpec<?, ?>> {
 
 		private static final int MAX_SUPPORTED_GETTERS = 32;
 
-		private static final AtomicInteger INSTANCE_COUNTER = new AtomicInteger();
-
-		private static final Method SPEC_TO_SERIALIZED_FORM;
+		public static final String SPEC_TO_SERIALIZED_FORM_NAME = "toSerializedForm";
 
 		private static final String SPEC_TO_SERIALIZED_FORM_DESCRIPTOR;
 
-		private static final Method STATIC_INITIALIZER_BRIDGE;
+		static final AsmGenerator<EqualityComparator<?>> GENERATOR;
 
-		private static final Method STATIC_INITIALIZER_BRIDGE_SERIALIZABLE;
-
-		private static final Type SPEC_NONSERIALIZABLE_TYPE = Type.getType(EqualityComparatorSpec.class);
-
-		private static final Type SPEC_SERIALIZABLE_TYPE = Type.getType(SerializableEqualityComparatorSpec.class);
-
-		private static final Type GETTER_NONSERIALIZABLE_TYPE = Type.getType(EqualityCriterion.class);
-
-		private static final Type GETTER_SERIALIZABLE_TYPE = Type.getType(SerializableEqualityCriterion.class);
+		static final AsmGenerator<SerializableEqualityComparator<?>> GENERATOR_SERIALIZABLE;
 
 		static {
 			try {
-				SPEC_TO_SERIALIZED_FORM = SerializableEqualityComparatorSpec.class.getDeclaredMethod("toSerializedForm");
-				SPEC_TO_SERIALIZED_FORM_DESCRIPTOR = Type.getMethodDescriptor(SPEC_TO_SERIALIZED_FORM);
-				STATIC_INITIALIZER_BRIDGE = StaticInitializerBridge.class.getDeclaredMethod("equality", Lookup.class);
-				STATIC_INITIALIZER_BRIDGE_SERIALIZABLE = StaticInitializerBridge.class.getDeclaredMethod("equalitySerializable", Lookup.class);
+				Method specToSerializedForm = SerializableEqualityComparatorSpec.class.getDeclaredMethod(SPEC_TO_SERIALIZED_FORM_NAME);
+				SPEC_TO_SERIALIZED_FORM_DESCRIPTOR = Type.getMethodDescriptor(specToSerializedForm);
+				Method staticInitializerBridge = StaticInitializerBridge.class.getDeclaredMethod("equality", Lookup.class);
+				Method staticInitializerBridgeSerializable = StaticInitializerBridge.class
+						.getDeclaredMethod("equalitySerializable", Lookup.class);
+
+				GeneratorConfig generatorConfig = new GeneratorConfig(
+						EqualityComparator.class,
+						EqualityComparatorSpec.class,
+						EqualityCriterion.class,
+						"GeneratedEqualityComparator",
+						staticInitializerBridge);
+				GeneratorConfig generatorConfigSerializable = new GeneratorConfig(
+						SerializableEqualityComparator.class,
+						SerializableEqualityComparatorSpec.class,
+						SerializableEqualityCriterion.class,
+						"GeneratedSerializableEqualityComparator",
+						staticInitializerBridgeSerializable);
+				GENERATOR = new AsmGenerator<>(generatorConfig);
+				GENERATOR_SERIALIZABLE = new AsmGenerator<>(generatorConfigSerializable);
 			} catch (Exception e) {
 				throw new ExceptionInInitializerError(e);
 			}
 		}
-
-		private final Class<?> comparatorType;
 
 		static boolean supports(Spec<?, ?> spec) {
 			int getterCount = spec.getGetterCount();
@@ -235,47 +242,8 @@ final class EqualityComparators {
 			return getterCount > 0 && getterCount <= AsmGenerator.MAX_SUPPORTED_GETTERS;
 		}
 
-		static <T> EqualityComparator<T> generate(EqualityComparatorSpec<T> userSpec, ImplSpec implSpec) {
-			AsmGenerator<T, EqualityComparator<T>, EqualityCriterion<T>> generator = new AsmGenerator<>(
-					userSpec,
-					implSpec,
-					EqualityComparator.class);
-
-			return generator.createInstance();
-		}
-
-		static <T> SerializableEqualityComparator<T> generateSerializable(SerializableEqualityComparatorSpec<T> userSpec, ImplSpec implSpec) {
-			AsmGenerator<T, SerializableEqualityComparator<T>, SerializableEqualityCriterion<T>> generator = new AsmGenerator<>(
-					userSpec,
-					implSpec,
-					SerializableEqualityComparator.class);
-
-			return generator.createInstance();
-		}
-
-		private AsmGenerator(BaseEqualityComparatorSpec<T, G> userSpec, ImplSpec implSpec, Class<?> comparatorType) {
-			super(userSpec, implSpec);
-			this.comparatorType = Objects.requireNonNull(comparatorType);
-		}
-
-		@Override
-		protected String classNamePrefix() {
-			return "GeneratedEqualityComparator";
-		}
-
-		@Override
-		protected int classNameSuffix() {
-			return INSTANCE_COUNTER.getAndIncrement();
-		}
-
-		@Override
-		protected Type specType() {
-			return isSerializable() ? SPEC_SERIALIZABLE_TYPE : SPEC_NONSERIALIZABLE_TYPE;
-		}
-
-		@Override
-		protected Class<?> comparatorClass() {
-			return comparatorType;
+		private AsmGenerator(GeneratorConfig config) {
+			super(config);
 		}
 
 		@Override
@@ -283,11 +251,11 @@ final class EqualityComparators {
 			MethodVisitor mv = cw.visitMethod(ACC_PRIVATE, "writeReplace", "()Ljava/lang/Object;", null, null);
 			mv.visitCode();
 
-			mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "spec", consts.specDescriptor);
+			mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "spec", config.specType.descriptor);
 			mv.visitMethodInsn(
 					INVOKEINTERFACE,
-					consts.specInternalName,
-					SPEC_TO_SERIALIZED_FORM.getName(),
+					config.specType.internalName,
+					SPEC_TO_SERIALIZED_FORM_NAME,
 					SPEC_TO_SERIALIZED_FORM_DESCRIPTOR,
 					true);
 
@@ -295,17 +263,7 @@ final class EqualityComparators {
 		}
 
 		@Override
-		protected void customize(ClassWriter cw, ClassDescription cd) {
-		}
-
-		@Override
-		protected Type getterType() {
-			return isSerializable() ? GETTER_SERIALIZABLE_TYPE : GETTER_NONSERIALIZABLE_TYPE;
-		}
-
-		@Override
-		protected Method getStaticInitializerBridgeMethod() {
-			return isSerializable() ? STATIC_INITIALIZER_BRIDGE_SERIALIZABLE : STATIC_INITIALIZER_BRIDGE;
+		protected void customize(ClassWriter cw, ClassDescription cd, Consts consts) {
 		}
 
 	}
