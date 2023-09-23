@@ -18,6 +18,7 @@ import io.github.jdcmp.codegen.ClassDefiners.LookupClassDefiner;
 import io.github.jdcmp.codegen.ClassDefiners.LookupHiddenClassDefiner;
 import io.github.jdcmp.codegen.ClassDefiners.LookupHiddenClassWithClassDataDefiner;
 import io.github.jdcmp.codegen.ClassDefiners.VMAnonymousClassDefiner;
+import io.github.jdcmp.codegen.ImplSpec.OptionalClassDefiners;
 import io.github.jdcmp.codegen.Instantiators.ConstructorInstantiator;
 import io.github.jdcmp.codegen.Instantiators.ReflectionFactoryConstructorInstantiator;
 import io.github.jdcmp.codegen.Instantiators.ReflectionFactoryInstantiator;
@@ -149,7 +150,7 @@ public final class CodegenProvider implements ComparatorProvider {
 	/**
 	 * Sets an {@link EventHandler} that is called during the class generation process.
 	 *
-	 * @param eventHandler An event handler; or null to restore default settings
+	 * @param eventHandler An event handler; null to restore default settings
 	 */
 	public void setEventHandler(@Nullable EventHandler eventHandler) {
 		this.customization.eventHandler = eventHandler;
@@ -175,7 +176,7 @@ public final class CodegenProvider implements ComparatorProvider {
 	}
 
 	/**
-	 * Configures strategies used for creating instances of generated comparators.
+	 * Configures strategies for creating instances of generated comparators.
 	 *
 	 * @param instantiators An array; null or empty to restore default settings
 	 */
@@ -195,7 +196,7 @@ public final class CodegenProvider implements ComparatorProvider {
 	/**
 	 * Configures whether generic bridge methods will be generated.
 	 *
-	 * @param generateBridgeMethods True to generate bridge methods; null to restore default settings
+	 * @param generateBridgeMethods True to generate bridge methods; false to omit bridge methods; null to restore default settings
 	 */
 	public void setGenerateBridgeMethods(@Nullable Boolean generateBridgeMethods) {
 		this.customization.generateBridgeMethods = generateBridgeMethods;
@@ -219,7 +220,7 @@ public final class CodegenProvider implements ComparatorProvider {
 		Lookup lookup = getLookup(spec, customization);
 		EventHandler eventHandler = customization.getEventHandler();
 		Collection<AvailableClassDefiner> availableClassDefiners = customization.getClassDefiners();
-		ImplSpec.OptionalClassDefiners classDefiners = createOptionalClassDefiners(availableClassDefiners);
+		OptionalClassDefiners classDefiners = createOptionalClassDefiners(availableClassDefiners);
 		List<Instantiator> instantiators = createInstantiators(customization.getInstantiators());
 		ImplSpec.ClassGeneratorConfig classGeneratorConfig = customization.getClassGeneratorConfig();
 
@@ -241,9 +242,9 @@ public final class CodegenProvider implements ComparatorProvider {
 		return lookup;
 	}
 
-	private ImplSpec.OptionalClassDefiners createOptionalClassDefiners(Collection<AvailableClassDefiner> classDefiners) {
+	private static OptionalClassDefiners createOptionalClassDefiners(Collection<AvailableClassDefiner> classDefiners) {
 		try {
-			return new ImplSpec.OptionalClassDefiners(
+			return new OptionalClassDefiners(
 					ClassDefinerHolder.vmAnonymous(classDefiners),
 					ClassDefinerHolder.lookupHiddenClassWithClassDataDefiner(classDefiners),
 					ClassDefinerHolder.lookupHiddenClassDefiner(classDefiners),
@@ -255,7 +256,7 @@ public final class CodegenProvider implements ComparatorProvider {
 		}
 	}
 
-	private List<Instantiator> createInstantiators(Collection<AvailableInstantiator> instantiators) {
+	private static List<Instantiator> createInstantiators(Collection<AvailableInstantiator> instantiators) {
 		try {
 			return Utils.nonEmptyArrayListOfNonNulls(
 					InstantiatorHolder.unsafe(instantiators),
@@ -363,7 +364,12 @@ public final class CodegenProvider implements ComparatorProvider {
 	@ThreadSafe
 	private enum NoopEventHandler implements EventHandler {
 
-		INSTANCE
+		INSTANCE;
+
+		@Override
+		public String toString() {
+			return NoopEventHandler.class.getSimpleName() + "." + name();
+		}
 
 	}
 
