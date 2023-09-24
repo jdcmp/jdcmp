@@ -52,6 +52,16 @@ Add this to `<dependencies>` inside your POM (e.g. `pom.xml`) and replace `VERSI
 
 Users of `<dependencyManagement>` may copy [some XML](docs/user/adding-the-maven-dependency.md).
 
+### Gradle
+
+Replace `VERSION` with an appropriate entry: 
+
+```
+dependencies {
+    implementation group: 'io.github.jdcmp', name: 'comparison-impl-codegen', version: 'VERSION'
+}
+```
+
 ## Dependencies
 
 The API project `comparison-api` requires no dependencies. The default implementation
@@ -313,7 +323,7 @@ class Person implements Comparable<Person> {
     }
   
     public int compareTo(Person other) {
-        return COMPARATOR.compareTo(this, other);
+        return COMPARATOR.compare(this, other);
     }
 
 }
