@@ -64,13 +64,16 @@ dependencies {
 
 ## Dependencies
 
-The API project `comparison-api` requires no dependencies. The default implementation
-`comparison-impl-codegen` requires the following dependencies:
+The API project `comparison-api` requires the following dependencies:
+
+* `org.jetbrains:annotations`
+
+The default implementation `comparison-impl-codegen` requires the following additional
+dependencies:
 
 * `org.ow2.asm:asm` ([shaded](https://maven.apache.org/plugins/maven-shade-plugin/))
 * `org.ow2.asm:asm-commons` ([shaded](https://maven.apache.org/plugins/maven-shade-plugin/))
 * `org.ow2.asm:asm-tree` ([shaded](https://maven.apache.org/plugins/maven-shade-plugin/))
-* `org.jetbrains:annotations`
 
 Licensing information is available [here](docs/licensing).
 
