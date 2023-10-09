@@ -19,8 +19,8 @@ public interface SerializableDoubleArrayGetter<T> extends
 	 * <p>Example: <code>SerializableDoubleArrayGetter.of(MyClass::getSomeDoubleArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> SerializableDoubleArrayGetter<T> of(SerializableDoubleArrayGetter<T> getter) {
 		return getter;

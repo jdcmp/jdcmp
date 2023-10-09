@@ -15,8 +15,8 @@ public interface SerializableFloatGetter<T> extends FloatGetter<T>, Serializable
 	 * <p>Example: <code>SerializableFloatGetter.of(MyClass::getSomeFloat)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> SerializableFloatGetter<T> of(SerializableFloatGetter<T> getter) {
 		return getter;

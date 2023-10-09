@@ -91,7 +91,7 @@ final class OrderingComparators {
 		public <T extends Comparable<? super T>> SerializableOrderingComparatorBuilder<T> fallbackToNaturalOrdering(Class<T> classToCompare) {
 			return new SerializableBuilder<>(classToCompare, OrderingFallbackMode.NATURAL);
 		}
-		
+
 	}
 
 	private static final class RequireAtLeastOneGetter<T> implements StepMandatoryGetter<T> {
@@ -101,7 +101,7 @@ final class OrderingComparators {
 		RequireAtLeastOneGetter(Class<T> classToCompare) {
 			this.classToCompare = Utils.verifyClassNotForbidden(classToCompare);
 		}
-		
+
 		@Override
 		public OrderingComparatorBuilder<T> use(OrderingCriterion<? super T> getter) {
 			return new Builder<>(classToCompare, null).use(getter);
@@ -183,7 +183,7 @@ final class OrderingComparators {
 	}
 
 	@NotThreadSafe
-	static final class SerializableBuilder<T>extends
+	static final class SerializableBuilder<T> extends
 			AbstractBuilder<T,
 					SerializableOrderingComparatorBuilder<T>,
 					SerializableOrderingComparator<T>,
@@ -191,7 +191,7 @@ final class OrderingComparators {
 			implements
 			SerializableOrderingComparatorBuilder<T> {
 
-		 SerializableBuilder(Class<T> classToCompare, @Nullable OrderingFallbackMode fallbackMode) {
+		SerializableBuilder(Class<T> classToCompare, @Nullable OrderingFallbackMode fallbackMode) {
 			super(classToCompare, fallbackMode);
 		}
 

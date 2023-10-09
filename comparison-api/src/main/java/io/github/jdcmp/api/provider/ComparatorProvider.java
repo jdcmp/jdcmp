@@ -21,8 +21,8 @@ public interface ComparatorProvider {
 	 * Creates a new comparator.
 	 *
 	 * @param spec Spec
+	 * @param <T>  Type whose instances can be compared
 	 * @return Comparator instance
-	 * @param <T> Type whose instances can be compared
 	 */
 	<T> EqualityComparator<T> createEqualityComparator(EqualityComparatorSpec<T> spec);
 
@@ -30,8 +30,8 @@ public interface ComparatorProvider {
 	 * Creates a new comparator.
 	 *
 	 * @param spec Spec
+	 * @param <T>  Type whose instances can be compared
 	 * @return Comparator instance
-	 * @param <T> Type whose instances can be compared
 	 */
 	<T> SerializableEqualityComparator<T> createSerializableEqualityComparator(SerializableEqualityComparatorSpec<T> spec);
 
@@ -39,8 +39,8 @@ public interface ComparatorProvider {
 	 * Creates a new comparator.
 	 *
 	 * @param spec Spec
+	 * @param <T>  Type whose instances can be compared
 	 * @return Comparator instance
-	 * @param <T> Type whose instances can be compared
 	 */
 	<T> OrderingComparator<T> createOrderingComparator(OrderingComparatorSpec<T> spec);
 
@@ -48,8 +48,8 @@ public interface ComparatorProvider {
 	 * Creates a new comparator.
 	 *
 	 * @param spec Spec
+	 * @param <T>  Type whose instances can be compared
 	 * @return Comparator instance
-	 * @param <T> Type whose instances can be compared
 	 */
 	<T> SerializableOrderingComparator<T> createSerializableOrderingComparator(SerializableOrderingComparatorSpec<T> spec);
 

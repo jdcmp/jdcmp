@@ -15,9 +15,9 @@ public interface SerializableGenericArrayGetter<T, R> extends GenericArrayGetter
 	 * <p>Example: <code>SerializableGenericArrayGetter.of(MyClass::getSomeArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
+	 * @param <R>    Type of the criterion
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
-	 * @param <R> Type of the criterion
 	 */
 	static <T, R> SerializableGenericArrayGetter<T, R> of(SerializableGenericArrayGetter<T, R> getter) {
 		return getter;

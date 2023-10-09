@@ -15,8 +15,8 @@ public interface SerializableCharGetter<T> extends CharGetter<T>, SerializableOr
 	 * <p>Example: <code>SerializableCharGetter.of(MyClass::getSomeChar)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> SerializableCharGetter<T> of(SerializableCharGetter<T> getter) {
 		return getter;

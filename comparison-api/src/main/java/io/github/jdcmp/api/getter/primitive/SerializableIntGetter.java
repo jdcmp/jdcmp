@@ -15,8 +15,8 @@ public interface SerializableIntGetter<T> extends IntGetter<T>, SerializableOrde
 	 * <p>Example: <code>SerializableIntGetter.of(MyClass::getSomeInt)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> SerializableIntGetter<T> of(SerializableIntGetter<T> getter) {
 		return getter;

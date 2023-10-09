@@ -22,9 +22,9 @@ public interface SerializableComparableArrayGetter<T, R extends Comparable<? sup
 	 * <p>Example: <code>SerializableComparableArrayGetter.of(MyClass::getSomeComparableArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
+	 * @param <R>    Type of the criterion
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
-	 * @param <R> Type of the criterion
 	 */
 	static <T, R extends Comparable<? super R>> SerializableComparableArrayGetter<T, R> of(SerializableComparableArrayGetter<T, R> getter) {
 		return getter;
@@ -36,9 +36,9 @@ public interface SerializableComparableArrayGetter<T, R extends Comparable<? sup
 	 * <p>Example: <code>SerializableComparableArrayGetter.nullsFirst(MyClass::getSomeComparableArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
+	 * @param <R>    Type of the criterion
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
-	 * @param <R> Type of the criterion
 	 */
 	static <T, R extends Comparable<? super R>> SerializableOrderingCriterion<T> nullsFirst(SerializableComparableArrayGetter<T, R> getter) {
 		return new SerializableComparatorGetter<>(getter, nullsFirst());
@@ -50,9 +50,9 @@ public interface SerializableComparableArrayGetter<T, R extends Comparable<? sup
 	 * <p>Example: <code>SerializableComparableArrayGetter.nullsLast(MyClass::getSomeComparableArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
+	 * @param <R>    Type of the criterion
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
-	 * @param <R> Type of the criterion
 	 */
 	static <T, R extends Comparable<? super R>> SerializableOrderingCriterion<T> nullsLast(SerializableComparableArrayGetter<T, R> getter) {
 		return new SerializableComparatorGetter<>(getter, nullsLast());
@@ -61,8 +61,8 @@ public interface SerializableComparableArrayGetter<T, R extends Comparable<? sup
 	/**
 	 * Orders nulls first if either the array is null or one of its elements is null.
 	 *
-	 * @return Comparator
 	 * @param <R> Type of the criterion
+	 * @return Comparator
 	 */
 	static <R extends Comparable<? super R>> Comparator<R[]> nullsFirst() {
 		Comparator<R> elementComparator = Comparator.nullsFirst(Comparator.naturalOrder());
@@ -73,8 +73,8 @@ public interface SerializableComparableArrayGetter<T, R extends Comparable<? sup
 	/**
 	 * Orders nulls last if either the array is null or one of its elements is null.
 	 *
-	 * @return Comparator
 	 * @param <R> Type of the criterion
+	 * @return Comparator
 	 */
 	static <R extends Comparable<? super R>> Comparator<R[]> nullsLast() {
 		Comparator<R> elementComparator = Comparator.nullsLast(Comparator.naturalOrder());
@@ -87,8 +87,8 @@ public interface SerializableComparableArrayGetter<T, R extends Comparable<? sup
 	 * The comparator is {@link Serializable}.
 	 *
 	 * @param elementComparator Comparator for array elements
+	 * @param <R>               Array component type
 	 * @return Comparator
-	 * @param <R> Array component type
 	 */
 	static <R extends Comparable<? super R>> Comparator<R[]> compareElementsBy(Comparator<R> elementComparator) {
 		return (Comparator<R[]> & Serializable) (a, b) -> compareLexicographically(a, b, elementComparator);
@@ -97,10 +97,10 @@ public interface SerializableComparableArrayGetter<T, R extends Comparable<? sup
 	/**
 	 * Compares two arrays lexicographically.
 	 *
-	 * @param a Left array
-	 * @param b Right array
-	 * @return Comparison result
+	 * @param a   Left array
+	 * @param b   Right array
 	 * @param <C> Comparable type with natural ordering
+	 * @return Comparison result
 	 */
 	static <C extends Comparable<? super C>> int compareLexicographically(C[] a, C[] b) {
 		return ComparableArrayGetter.compareLexicographically(a, b);
@@ -109,11 +109,11 @@ public interface SerializableComparableArrayGetter<T, R extends Comparable<? sup
 	/**
 	 * Compares two arrays lexicographically.
 	 *
-	 * @param a Left array
-	 * @param b Right array
+	 * @param a          Left array
+	 * @param b          Right array
 	 * @param comparator Comparator
+	 * @param <C>        Generic array component type
 	 * @return Comparison result
-	 * @param <C> Generic array component type
 	 */
 	static <C> int compareLexicographically(C[] a, C[] b, Comparator<? super C> comparator) {
 		return ComparableArrayGetter.compareLexicographically(a, b, comparator);

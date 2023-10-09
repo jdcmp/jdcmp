@@ -10,7 +10,7 @@ public final class UnderprivilegedLookupException extends IllegalArgumentExcepti
 	/**
 	 * Constructs an {@link UnderprivilegedLookupException} with a message containing the Lookup and type.
 	 *
-	 * @param lookup The lookup attempting the access
+	 * @param lookup            The lookup attempting the access
 	 * @param classToBeAccessed The type to be accessed
 	 * @return A new exception instance
 	 */

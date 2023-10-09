@@ -39,8 +39,8 @@ public interface ByteGetter<T> extends OrderingCriterion<T> {
 	 * <p>Example: <code>ByteGetter.of(MyClass::getSomeByte)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> ByteGetter<T> of(ByteGetter<T> getter) {
 		return getter;

@@ -15,8 +15,8 @@ public interface SerializableDoubleGetter<T> extends DoubleGetter<T>, Serializab
 	 * <p>Example: <code>SerializableDoubleGetter.of(MyClass::getSomeDouble)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> SerializableDoubleGetter<T> of(SerializableDoubleGetter<T> getter) {
 		return getter;

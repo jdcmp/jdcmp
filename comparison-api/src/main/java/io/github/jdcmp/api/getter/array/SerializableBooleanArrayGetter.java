@@ -19,8 +19,8 @@ public interface SerializableBooleanArrayGetter<T> extends
 	 * <p>Example: <code>SerializableBooleanArrayGetter.of(MyClass::getSomeBooleanArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> SerializableBooleanArrayGetter<T> of(SerializableBooleanArrayGetter<T> getter) {
 		return getter;

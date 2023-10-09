@@ -15,8 +15,8 @@ public interface SerializableShortGetter<T> extends ShortGetter<T>, Serializable
 	 * <p>Example: <code>SerializableShortGetter.of(MyClass::getSomeLong)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> SerializableShortGetter<T> of(SerializableShortGetter<T> getter) {
 		return getter;

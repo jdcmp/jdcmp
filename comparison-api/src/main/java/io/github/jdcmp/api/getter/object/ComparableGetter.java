@@ -34,9 +34,9 @@ public interface ComparableGetter<T, R extends Comparable<? super R>> extends Or
 	 * <p>Example: <code>ComparableGetter.of(MyClass::getComparable)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
+	 * @param <R>    Type of the criterion
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
-	 * @param <R> Type of the criterion
 	 */
 	static <T, R extends Comparable<? super R>> ComparableGetter<T, R> of(ComparableGetter<T, R> getter) {
 		return getter;
@@ -48,9 +48,9 @@ public interface ComparableGetter<T, R extends Comparable<? super R>> extends Or
 	 * <p>Example: <code>ComparableGetter.nullsFirst(MyClass::getComparable)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
+	 * @param <R>    Type of the criterion
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
-	 * @param <R> Type of the criterion
 	 */
 	static <T, R extends Comparable<? super R>> OrderingCriterion<T> nullsFirst(ComparableGetter<T, R> getter) {
 		return new ComparatorGetter<>(getter, Comparator.nullsFirst(Comparator.naturalOrder()));
@@ -62,9 +62,9 @@ public interface ComparableGetter<T, R extends Comparable<? super R>> extends Or
 	 * <p>Example: <code>ComparableGetter.nullsLast(MyClass::getComparable)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
+	 * @param <R>    Type of the criterion
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
-	 * @param <R> Type of the criterion
 	 */
 	static <T, R extends Comparable<? super R>> OrderingCriterion<T> nullsLast(ComparableGetter<T, R> getter) {
 		return new ComparatorGetter<>(getter, Comparator.nullsLast(Comparator.naturalOrder()));

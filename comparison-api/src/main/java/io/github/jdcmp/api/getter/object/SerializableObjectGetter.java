@@ -15,8 +15,8 @@ public interface SerializableObjectGetter<T> extends ObjectGetter<T>, Serializab
 	 * <p>Example: <code>SerializableObjectGetter.of(MyClass::getSomeObject)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> SerializableObjectGetter<T> of(SerializableObjectGetter<T> getter) {
 		return getter;

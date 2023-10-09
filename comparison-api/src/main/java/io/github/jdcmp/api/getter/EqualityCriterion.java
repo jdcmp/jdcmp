@@ -21,7 +21,7 @@ public interface EqualityCriterion<T> {
 	int hash(T object);
 
 	/**
-	 * @param self A primary object, typically <i>this</i> reference when implementing inside <i>T</i>
+	 * @param self  A primary object, typically <i>this</i> reference when implementing inside <i>T</i>
 	 * @param other A secondary object
 	 * @return If objects are equal true; false otherwise
 	 */

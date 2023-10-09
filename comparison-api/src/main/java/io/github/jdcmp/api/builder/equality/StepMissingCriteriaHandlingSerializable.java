@@ -9,8 +9,8 @@ public interface StepMissingCriteriaHandlingSerializable {
 	 * See {@link StepMissingCriteriaHandling#requireAtLeastOneGetter(Class)}.
 	 *
 	 * @param classToCompare The class whose instances can be compared
+	 * @param <T>            Type whose instances can be compared
 	 * @return The next step in the build process
-	 * @param <T> Type whose instances can be compared
 	 */
 	<T> StepMandatorySerializableGetter<T> requireAtLeastOneGetter(Class<T> classToCompare);
 
@@ -18,8 +18,8 @@ public interface StepMissingCriteriaHandlingSerializable {
 	 * See {@link StepMissingCriteriaHandling#fallbackToIdentity(Class)}.
 	 *
 	 * @param classToCompare The class whose instances can be compared
+	 * @param <T>            Type whose instances can be compared
 	 * @return The next step in the build process
-	 * @param <T> Type whose instances can be compared
 	 */
 	<T> SerializableEqualityComparatorBuilder<T> fallbackToIdentity(Class<T> classToCompare);
 

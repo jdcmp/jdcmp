@@ -61,8 +61,8 @@ public interface ShortArrayGetter<T> extends OrderingCriterion<T>, GenericGetter
 	 * <p>Example: <code>ShortArrayGetter.of(MyClass::getSomeShortArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> ShortArrayGetter<T> of(ShortArrayGetter<T> getter) {
 		return getter;

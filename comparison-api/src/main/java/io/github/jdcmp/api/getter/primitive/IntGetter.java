@@ -33,8 +33,8 @@ public interface IntGetter<T> extends OrderingCriterion<T>, ToIntFunction<T> {
 	 * <p>Example: <code>IntGetter.of(MyClass::getSomeInt)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> IntGetter<T> of(IntGetter<T> getter) {
 		return getter;

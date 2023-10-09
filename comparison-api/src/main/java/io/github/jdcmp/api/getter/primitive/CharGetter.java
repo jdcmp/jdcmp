@@ -39,8 +39,8 @@ public interface CharGetter<T> extends OrderingCriterion<T> {
 	 * <p>Example: <code>CharGetter.of(MyClass::getSomeChar)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> CharGetter<T> of(CharGetter<T> getter) {
 		return getter;

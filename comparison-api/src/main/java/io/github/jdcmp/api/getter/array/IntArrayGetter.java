@@ -61,8 +61,8 @@ public interface IntArrayGetter<T> extends OrderingCriterion<T>, GenericGetter<T
 	 * <p>Example: <code>IntArrayGetter.of(MyClass::getSomeIntArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> IntArrayGetter<T> of(IntArrayGetter<T> getter) {
 		return getter;

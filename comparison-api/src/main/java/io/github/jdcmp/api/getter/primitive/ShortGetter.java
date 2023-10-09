@@ -39,8 +39,8 @@ public interface ShortGetter<T> extends OrderingCriterion<T> {
 	 * <p>Example: <code>ShortGetter.of(MyClass::getSomeLong)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> ShortGetter<T> of(ShortGetter<T> getter) {
 		return getter;

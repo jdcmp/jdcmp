@@ -22,7 +22,7 @@ public interface EqualityComparator<T> {
 	int hash(@Nullable T object);
 
 	/**
-	 * @param self A primary object with a known type, typically <i>this</i> reference when implementing inside <i>T</i>; nullable
+	 * @param self  A primary object with a known type, typically <i>this</i> reference when implementing inside <i>T</i>; nullable
 	 * @param other A foreign object with an unknown type, typically the argument in {@link Object#equals(Object)}; nullable
 	 * @return If objects are equal true; false otherwise
 	 */

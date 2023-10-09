@@ -21,7 +21,7 @@ public final class HashParameters {
 	 * Returns an instance of {@link HashParameters}.
 	 *
 	 * @param initialValue The initial hash value
-	 * @param multiplier The hash multiplier
+	 * @param multiplier   The hash multiplier
 	 * @return An instance of HashParameters wrapping the given values
 	 */
 	public static HashParameters of(int initialValue, int multiplier) {

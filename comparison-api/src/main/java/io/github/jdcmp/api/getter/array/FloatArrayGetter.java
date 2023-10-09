@@ -61,8 +61,8 @@ public interface FloatArrayGetter<T> extends OrderingCriterion<T>, GenericGetter
 	 * <p>Example: <code>FloatArrayGetter.of(MyClass::getSomeFloatArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> FloatArrayGetter<T> of(FloatArrayGetter<T> getter) {
 		return getter;

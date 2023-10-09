@@ -28,7 +28,7 @@ import io.github.jdcmp.api.documentation.ThreadSafe;
  *         	<ul>
  *         		<li>{@link Object#hashCode()}</li>
  *         		<li>{@link Object#equals(Object)}</li>
- *				<li>{@link Comparable#compareTo(Object)}</li>
+ * 				<li>{@link Comparable#compareTo(Object)}</li>
  *         </ul>
  *     </dd>
  * </dl>

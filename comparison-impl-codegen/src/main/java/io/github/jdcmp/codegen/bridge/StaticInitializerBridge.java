@@ -35,10 +35,10 @@ public final class StaticInitializerBridge {
 	 * Registers the given spec as dependencies for the given comparator class, then runs the given action.
 	 *
 	 * @param comparatorClass The generated comparator class
-	 * @param spec Dependencies
-	 * @param callable User action
+	 * @param spec            Dependencies
+	 * @param callable        User action
+	 * @param <T>             Type of the user action's result
 	 * @return The user action's result
-	 * @param <T> Type of the user action's result
 	 */
 	public static <T> T run(Class<?> comparatorClass, Spec<?, ?> spec, Callable<? extends T> callable) {
 		THREAD_LOCAL.set(new Registration<>(comparatorClass, spec));

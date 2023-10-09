@@ -61,8 +61,8 @@ public interface DoubleArrayGetter<T> extends OrderingCriterion<T>, GenericGette
 	 * <p>Example: <code>DoubleArrayGetter.of(MyClass::getSomeDoubleArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> DoubleArrayGetter<T> of(DoubleArrayGetter<T> getter) {
 		return getter;
