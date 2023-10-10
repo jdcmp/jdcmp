@@ -15,7 +15,7 @@ import io.github.jdcmp.codegen.bridge.StaticInitializerBridge;
 import io.github.jdcmp.codegen.contract.EventHandler;
 import io.github.jdcmp.codegen.customization.AvailableInitializationMode;
 import io.github.jdcmp.codegen.customization.AvailableInitializationMode.InitializationModeMapper;
-import io.github.jdcmp.codegen.customization.AvailableSerializationMode;
+import io.github.jdcmp.codegen.customization.AvailableSerializationMode.SerializationModeMapper;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.ConstantDynamic;
 import org.objectweb.asm.Handle;
@@ -271,9 +271,16 @@ abstract class BytecodeGenerator<C extends EqualityComparator<?>, U extends Spec
 			}
 
 			void addTo(ClassWriter cw) {
-				consts.implSpec.getSerializationMode().map(new AvailableSerializationMode.SerializationModeMapper<Void>() {
+				consts.implSpec.getSerializationMode().map(new SerializationModeMapper<Void>() {
 					@Override
 					public Void onCompatible() {
+						addCompatibleSerializationMethod(cw, cd);
+						addHostileReadObject(cw);
+						return null;
+					}
+
+					@Override
+					public Void onCompatibleUnprotected() {
 						addCompatibleSerializationMethod(cw, cd);
 						return null;
 					}

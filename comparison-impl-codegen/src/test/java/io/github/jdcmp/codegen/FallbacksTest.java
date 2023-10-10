@@ -15,6 +15,7 @@ import io.github.jdcmp.codegen.Fallbacks.IdentityOrderFallback;
 import io.github.jdcmp.codegen.Fallbacks.NaturalOrderFallback;
 import io.github.jdcmp.codegen.Fallbacks.SerializableIdentityFallback;
 import io.github.jdcmp.codegen.Fallbacks.SerializableNaturalOrderFallback;
+import io.github.jdcmp.codegen.customization.AvailableSerializationMode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -53,7 +54,7 @@ public class FallbacksTest {
 					Collections.emptySet(),
 					EqualityFallbackMode.IDENTITY,
 					MethodHandles.lookup());
-			SerializableIdentityFallback<String> original = new SerializableIdentityFallback<>(spec);
+			SerializableIdentityFallback<String> original = new SerializableIdentityFallback<>(spec, AvailableSerializationMode.COMPATIBLE);
 			SerializableIdentityFallback fallback = SerializationUtils.copy(original);
 
 			Assertions.assertThrows(ClassCastException.class, () -> fallback.hash(new Object()));
@@ -88,7 +89,7 @@ public class FallbacksTest {
 					NullHandling.THROW,
 					OrderingFallbackMode.NATURAL,
 					MethodHandles.lookup());
-			NaturalOrderFallback fallback =  new NaturalOrderFallback<>(spec);
+			NaturalOrderFallback fallback = new NaturalOrderFallback<>(spec);
 
 			Assertions.assertThrows(ClassCastException.class, () -> fallback.hash(42));
 			Assertions.assertThrows(ClassCastException.class, () -> fallback.areEqual(42, null));
@@ -106,7 +107,7 @@ public class FallbacksTest {
 					NullHandling.THROW,
 					OrderingFallbackMode.NATURAL,
 					MethodHandles.lookup());
-			SerializableNaturalOrderFallback fallback = new SerializableNaturalOrderFallback<>(spec);
+			SerializableNaturalOrderFallback fallback = new SerializableNaturalOrderFallback<>(spec, AvailableSerializationMode.COMPATIBLE);
 
 			Assertions.assertThrows(ClassCastException.class, () -> fallback.hash(42));
 			Assertions.assertThrows(ClassCastException.class, () -> fallback.areEqual(42, null));
@@ -144,7 +145,7 @@ public class FallbacksTest {
 					Collections.emptySet(),
 					EqualityFallbackMode.IDENTITY,
 					MethodHandles.lookup());
-			SerializableIdentityFallback fallback = new SerializableIdentityFallback<>(spec);
+			SerializableIdentityFallback fallback = new SerializableIdentityFallback<>(spec, AvailableSerializationMode.COMPATIBLE);
 
 			Object object = new Object();
 			Assertions.assertEquals(17, fallback.hash(object));
@@ -202,7 +203,7 @@ public class FallbacksTest {
 					NullHandling.THROW,
 					OrderingFallbackMode.NATURAL,
 					MethodHandles.lookup());
-			SerializableNaturalOrderFallback fallback = new SerializableNaturalOrderFallback<>(spec);
+			SerializableNaturalOrderFallback fallback = new SerializableNaturalOrderFallback<>(spec, AvailableSerializationMode.COMPATIBLE);
 
 			String object = new String("test");
 			Assertions.assertEquals(17, fallback.hash(object));

@@ -12,6 +12,7 @@ import io.github.jdcmp.api.spec.Specs;
 import io.github.jdcmp.api.spec.equality.SerializableEqualityComparatorSpec;
 import io.github.jdcmp.api.spec.ordering.OrderingComparatorSpec;
 import io.github.jdcmp.api.spec.ordering.SerializableOrderingComparatorSpec;
+import io.github.jdcmp.codegen.customization.AvailableSerializationMode;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -41,6 +42,16 @@ final class Fallbacks {
 	}
 
 	@ThreadSafe
+	static final class NaturalOrderFallback<T extends Comparable<? super T>> extends AbstractNaturalOrderFallback<T>
+			implements OrderingComparator<T> {
+
+		NaturalOrderFallback(OrderingComparatorSpec<T> spec) {
+			super(spec);
+		}
+
+	}
+
+	@ThreadSafe
 	static final class SerializableIdentityFallback<T> extends AbstractIdentityFallback<T>
 			implements SerializableEqualityComparator<T> {
 
@@ -48,9 +59,12 @@ final class Fallbacks {
 
 		private final transient SerializableEqualityComparatorSpec<T> spec;
 
-		SerializableIdentityFallback(SerializableEqualityComparatorSpec<T> spec) {
-			super(spec);
-			this.spec = Specs.equalitySerializable(spec);
+		private final transient AvailableSerializationMode serializationMode;
+
+		SerializableIdentityFallback(SerializableEqualityComparatorSpec<T> userSpec, AvailableSerializationMode serializationMode) {
+			super(userSpec);
+			this.spec = Specs.equalitySerializable(userSpec);
+			this.serializationMode = Objects.requireNonNull(serializationMode);
 		}
 
 		private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -58,6 +72,8 @@ final class Fallbacks {
 		}
 
 		private Object writeReplace() throws ObjectStreamException {
+			serializationMode.throwIfPrevented();
+
 			return spec.toSerializedForm();
 		}
 
@@ -71,9 +87,12 @@ final class Fallbacks {
 
 		private final transient SerializableOrderingComparatorSpec<T> spec;
 
-		SerializableIdentityOrderFallback(SerializableOrderingComparatorSpec<T> spec) {
+		private final transient AvailableSerializationMode serializationMode;
+
+		SerializableIdentityOrderFallback(SerializableOrderingComparatorSpec<T> spec, AvailableSerializationMode serializationMode) {
 			super(spec);
 			this.spec = Specs.orderingSerializable(spec);
+			this.serializationMode = Objects.requireNonNull(serializationMode);
 		}
 
 		private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -81,17 +100,9 @@ final class Fallbacks {
 		}
 
 		private Object writeReplace() throws ObjectStreamException {
+			serializationMode.throwIfPrevented();
+
 			return spec.toSerializedForm();
-		}
-
-	}
-
-	@ThreadSafe
-	static final class NaturalOrderFallback<T extends Comparable<? super T>> extends AbstractNaturalOrderFallback<T>
-			implements OrderingComparator<T> {
-
-		NaturalOrderFallback(OrderingComparatorSpec<T> spec) {
-			super(spec);
 		}
 
 	}
@@ -104,9 +115,12 @@ final class Fallbacks {
 
 		private final transient SerializableOrderingComparatorSpec<T> spec;
 
-		SerializableNaturalOrderFallback(SerializableOrderingComparatorSpec<T> spec) {
+		private final transient AvailableSerializationMode serializationMode;
+
+		SerializableNaturalOrderFallback(SerializableOrderingComparatorSpec<T> spec, AvailableSerializationMode serializationMode) {
 			super(spec);
 			this.spec = Specs.orderingSerializable(spec);
+			this.serializationMode = Objects.requireNonNull(serializationMode);
 		}
 
 		private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -114,6 +128,8 @@ final class Fallbacks {
 		}
 
 		private Object writeReplace() throws ObjectStreamException {
+			serializationMode.throwIfPrevented();
+
 			return spec.toSerializedForm();
 		}
 
@@ -123,14 +139,14 @@ final class Fallbacks {
 
 		protected final Class<?> classToCompare;
 
-		private final int hash;
-
 		protected final boolean strictTypes;
 
-		public AbstractIdentityFallback(Spec<?, ?> spec) {
+		private final int hash;
+
+		protected AbstractIdentityFallback(Spec<?, ?> spec) {
 			this.classToCompare = Objects.requireNonNull(spec.getClassToCompare());
-			this.hash = spec.getHashParameters().initialValue();
 			this.strictTypes = spec.useStrictTypes();
+			this.hash = spec.getHashParameters().initialValue();
 		}
 
 		@Override
