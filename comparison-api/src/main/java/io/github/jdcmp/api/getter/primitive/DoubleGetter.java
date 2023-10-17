@@ -33,8 +33,8 @@ public interface DoubleGetter<T> extends OrderingCriterion<T>, ToDoubleFunction<
 	 * <p>Example: <code>DoubleGetter.of(MyClass::getSomeDouble)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> DoubleGetter<T> of(DoubleGetter<T> getter) {
 		return getter;

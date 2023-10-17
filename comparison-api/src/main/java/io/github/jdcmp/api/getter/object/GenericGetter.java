@@ -34,8 +34,8 @@ public interface GenericGetter<T, R> extends EqualityCriterion<T>, Function<T, R
 	 * <p>Example: <code>GenericGetter.of(MyClass::getSomething)</code></p>
 	 *
 	 * @param getter The getter
-	 * @param <T> Type whose instances can be compared using the getter
-	 * @param <R> Type of the criterion
+	 * @param <T>    Type whose instances can be compared using the getter
+	 * @param <R>    Type of the criterion
 	 * @return The getter
 	 */
 	static <T, R> GenericGetter<T, R> of(GenericGetter<T, R> getter) {

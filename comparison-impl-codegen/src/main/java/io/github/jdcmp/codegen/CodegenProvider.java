@@ -18,6 +18,7 @@ import io.github.jdcmp.codegen.ClassDefiners.LookupClassDefiner;
 import io.github.jdcmp.codegen.ClassDefiners.LookupHiddenClassDefiner;
 import io.github.jdcmp.codegen.ClassDefiners.LookupHiddenClassWithClassDataDefiner;
 import io.github.jdcmp.codegen.ClassDefiners.VMAnonymousClassDefiner;
+import io.github.jdcmp.codegen.ImplSpec.ClassGeneratorConfig;
 import io.github.jdcmp.codegen.ImplSpec.OptionalClassDefiners;
 import io.github.jdcmp.codegen.Instantiators.ConstructorInstantiator;
 import io.github.jdcmp.codegen.Instantiators.ReflectionFactoryConstructorInstantiator;
@@ -222,7 +223,7 @@ public final class CodegenProvider implements ComparatorProvider {
 		Collection<AvailableClassDefiner> availableClassDefiners = customization.getClassDefiners();
 		OptionalClassDefiners classDefiners = createOptionalClassDefiners(availableClassDefiners);
 		List<Instantiator> instantiators = createInstantiators(customization.getInstantiators());
-		ImplSpec.ClassGeneratorConfig classGeneratorConfig = customization.getClassGeneratorConfig();
+		ClassGeneratorConfig classGeneratorConfig = customization.getClassGeneratorConfig();
 
 		return new ImplSpec(lookup, eventHandler, classDefiners, instantiators, classGeneratorConfig);
 	}
@@ -246,10 +247,10 @@ public final class CodegenProvider implements ComparatorProvider {
 		try {
 			return new OptionalClassDefiners(
 					ClassDefinerHolder.vmAnonymous(classDefiners),
-					ClassDefinerHolder.lookupHiddenClassWithClassDataDefiner(classDefiners),
-					ClassDefinerHolder.lookupHiddenClassDefiner(classDefiners),
-					ClassDefinerHolder.lookupClassDefiner(classDefiners),
-					ClassDefinerHolder.classLoaderClassDefiner(classDefiners)
+					ClassDefinerHolder.lookupHiddenClassWithClassData(classDefiners),
+					ClassDefinerHolder.lookupHidden(classDefiners),
+					ClassDefinerHolder.lookup(classDefiners),
+					ClassDefinerHolder.classLoader(classDefiners)
 			);
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException("ClassDefiners are unavailable: " + classDefiners, e);
@@ -272,31 +273,31 @@ public final class CodegenProvider implements ComparatorProvider {
 	@ThreadSafe
 	private static final class Customization {
 
-		private static final EventHandler DEFAULT_EVENT_HANDLER = NoopEventHandler.INSTANCE;
+		static final EventHandler DEFAULT_EVENT_HANDLER = NoopEventHandler.INSTANCE;
 
-		private static final AvailableSerializationMode DEFAULT_SERIALIZATION_MODE = AvailableSerializationMode.COMPATIBLE;
+		static final AvailableSerializationMode DEFAULT_SERIALIZATION_MODE = AvailableSerializationMode.COMPATIBLE;
 
-		private static final Set<AvailableClassDefiner> DEFAULT_CLASS_DEFINERS = Utils.immutableEnumSet(AvailableClassDefiner.class);
+		static final Set<AvailableClassDefiner> DEFAULT_CLASS_DEFINERS = Utils.immutableEnumSet(AvailableClassDefiner.class);
 
-		private static final Set<AvailableInstantiator> DEFAULT_INSTANTIATORS = Utils.immutableEnumSet(AvailableInstantiator.class);
+		static final Set<AvailableInstantiator> DEFAULT_INSTANTIATORS = Utils.immutableEnumSet(AvailableInstantiator.class);
 
-		private static final AvailableInitializationMode DEFAULT_INITIALIZATION_MODE = AvailableInitializationMode.STATIC_INITIALIZER;
+		static final AvailableInitializationMode DEFAULT_INITIALIZATION_MODE = AvailableInitializationMode.STATIC_INITIALIZER;
 
-		public static final Boolean DEFAULT_GENERATE_BRIDGE_METHODS = Boolean.FALSE;
+		static final Boolean DEFAULT_GENERATE_BRIDGE_METHODS = Boolean.FALSE;
 
-		private final LookupFactory lookupFactory;
+		final LookupFactory lookupFactory;
 
-		private volatile @Nullable EventHandler eventHandler;
+		volatile @Nullable EventHandler eventHandler;
 
-		private volatile @Nullable AvailableSerializationMode serializationMode;
+		volatile @Nullable AvailableSerializationMode serializationMode;
 
-		private volatile @Nullable Set<AvailableClassDefiner> classDefiners;
+		volatile @Nullable Set<AvailableClassDefiner> classDefiners;
 
-		private volatile @Nullable Set<AvailableInstantiator> instantiators;
+		volatile @Nullable Set<AvailableInstantiator> instantiators;
 
-		private volatile @Nullable AvailableInitializationMode initializationMode;
+		volatile @Nullable AvailableInitializationMode initializationMode;
 
-		private volatile @Nullable Boolean generateBridgeMethods;
+		volatile @Nullable Boolean generateBridgeMethods;
 
 		Customization(LookupFactory lookupFactory) {
 			this.lookupFactory = Objects.requireNonNull(lookupFactory);
@@ -336,8 +337,8 @@ public final class CodegenProvider implements ComparatorProvider {
 			return Utils.or(this.generateBridgeMethods, DEFAULT_GENERATE_BRIDGE_METHODS);
 		}
 
-		ImplSpec.ClassGeneratorConfig getClassGeneratorConfig() {
-			return new ImplSpec.ClassGeneratorConfig(
+		ClassGeneratorConfig getClassGeneratorConfig() {
+			return new ClassGeneratorConfig(
 					getSerializationMode(),
 					getInitializationMode(),
 					generateBridgeMethods());
@@ -359,6 +360,7 @@ public final class CodegenProvider implements ComparatorProvider {
 					", generateBridgeMethods=" + generateBridgeMethods +
 					"]";
 		}
+
 	}
 
 	@ThreadSafe
@@ -376,35 +378,35 @@ public final class CodegenProvider implements ComparatorProvider {
 	@ThreadSafe
 	private static final class ClassDefinerHolder {
 
-		private static final Lazy<VMAnonymousClassDefiner> VM_ANONYMOUS = new Lazy<>(VMAnonymousClassDefiner::new);
+		static final Lazy<VMAnonymousClassDefiner> VM_ANONYMOUS = new Lazy<>(VMAnonymousClassDefiner::new);
 
-		private static final Lazy<LookupHiddenClassWithClassDataDefiner> LOOKUP_HIDDEN_CLASS_WITH_CLASS_DATA
+		static final Lazy<LookupHiddenClassWithClassDataDefiner> LOOKUP_HIDDEN_CLASS_WITH_CLASS_DATA
 				= new Lazy<>(LookupHiddenClassWithClassDataDefiner::new);
 
-		private static final Lazy<LookupHiddenClassDefiner> LOOKUP_HIDDEN = new Lazy<>(LookupHiddenClassDefiner::new);
+		static final Lazy<LookupHiddenClassDefiner> LOOKUP_HIDDEN = new Lazy<>(LookupHiddenClassDefiner::new);
 
-		private static final Lazy<LookupClassDefiner> LOOKUP = new Lazy<>(LookupClassDefiner::new);
+		static final Lazy<LookupClassDefiner> LOOKUP = new Lazy<>(LookupClassDefiner::new);
 
-		private static final Lazy<ClassLoaderClassDefiner> CLASS_LOADER = new Lazy<>(ClassLoaderClassDefiner::new);
+		static final Lazy<ClassLoaderClassDefiner> CLASS_LOADER = new Lazy<>(ClassLoaderClassDefiner::new);
 
 		static @Nullable VMAnonymousClassDefiner vmAnonymous(Collection<AvailableClassDefiner> classDefiners) {
 			return VM_ANONYMOUS.load(classDefiners, AvailableClassDefiner.VM_ANONYMOUS);
 		}
 
-		static @Nullable LookupHiddenClassWithClassDataDefiner lookupHiddenClassWithClassDataDefiner(
+		static @Nullable LookupHiddenClassWithClassDataDefiner lookupHiddenClassWithClassData(
 				Collection<AvailableClassDefiner> classDefiners) {
 			return LOOKUP_HIDDEN_CLASS_WITH_CLASS_DATA.load(classDefiners, AvailableClassDefiner.LOOKUP_HIDDEN_CLASS_DATA);
 		}
 
-		static @Nullable LookupHiddenClassDefiner lookupHiddenClassDefiner(Collection<AvailableClassDefiner> classDefiners) {
+		static @Nullable LookupHiddenClassDefiner lookupHidden(Collection<AvailableClassDefiner> classDefiners) {
 			return LOOKUP_HIDDEN.load(classDefiners, AvailableClassDefiner.LOOKUP_HIDDEN);
 		}
 
-		static @Nullable LookupClassDefiner lookupClassDefiner(Collection<AvailableClassDefiner> classDefiners) {
+		static @Nullable LookupClassDefiner lookup(Collection<AvailableClassDefiner> classDefiners) {
 			return LOOKUP.load(classDefiners, AvailableClassDefiner.LOOKUP);
 		}
 
-		static @Nullable ClassLoaderClassDefiner classLoaderClassDefiner(Collection<AvailableClassDefiner> classDefiners) {
+		static @Nullable ClassLoaderClassDefiner classLoader(Collection<AvailableClassDefiner> classDefiners) {
 			return CLASS_LOADER.load(classDefiners, AvailableClassDefiner.CLASS_LOADER);
 		}
 
@@ -413,15 +415,15 @@ public final class CodegenProvider implements ComparatorProvider {
 	@ThreadSafe
 	private static final class InstantiatorHolder {
 
-		private static final Lazy<UnsafeInstantiator> UNSAFE = new Lazy<>(UnsafeInstantiator::new);
+		static final Lazy<UnsafeInstantiator> UNSAFE = new Lazy<>(UnsafeInstantiator::new);
 
-		private static final Lazy<ReflectionFactoryInstantiator> REFLECTION_FACTORY
+		static final Lazy<ReflectionFactoryInstantiator> REFLECTION_FACTORY
 				= new Lazy<>(ReflectionFactoryInstantiator::new);
 
-		private static final Lazy<ReflectionFactoryConstructorInstantiator> REFLECTION_FACTORY_CONSTRUCTOR
+		static final Lazy<ReflectionFactoryConstructorInstantiator> REFLECTION_FACTORY_CONSTRUCTOR
 				= new Lazy<>(ReflectionFactoryConstructorInstantiator::new);
 
-		private static final Lazy<ConstructorInstantiator> CONSTRUCTOR = new Lazy<>(ConstructorInstantiator::new);
+		static final Lazy<ConstructorInstantiator> CONSTRUCTOR = new Lazy<>(ConstructorInstantiator::new);
 
 		static @Nullable UnsafeInstantiator unsafe(Collection<AvailableInstantiator> instantiators) {
 			return UNSAFE.load(instantiators, AvailableInstantiator.UNSAFE);
@@ -445,9 +447,9 @@ public final class CodegenProvider implements ComparatorProvider {
 	@ThreadSafe
 	private static final class Lazy<T> {
 
-		private volatile Callable<? extends T> factory;
+		private volatile @Nullable Callable<? extends T> factory;
 
-		private T value;
+		private @Nullable T value;
 
 		Lazy(Callable<? extends T> factory) {
 			this.factory = Objects.requireNonNull(factory);
@@ -465,14 +467,14 @@ public final class CodegenProvider implements ComparatorProvider {
 			}
 		}
 
-		public T load() throws Exception {
-			Callable<? extends T> factory = this.factory;
-
-			return factory == null ? value : newInstance(factory);
+		public @Nullable T load() throws Exception {
+			return factory == null ? value : newInstance();
 		}
 
-		private synchronized T newInstance(Callable<? extends T> factory) throws Exception {
-			if (this.factory == null) {
+		private synchronized @Nullable T newInstance() throws Exception {
+			Callable<? extends T> factory = this.factory;
+
+			if (factory == null) {
 				return value;
 			}
 

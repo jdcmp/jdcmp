@@ -33,8 +33,8 @@ public interface BooleanGetter<T> extends OrderingCriterion<T>, Predicate<T> {
 	 * <p>Example: <code>BooleanGetter.of(MyClass::getSomeBoolean)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> BooleanGetter<T> of(BooleanGetter<T> getter) {
 		return getter;

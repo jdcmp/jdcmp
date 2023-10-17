@@ -15,8 +15,8 @@ public interface SerializableByteGetter<T> extends ByteGetter<T>, SerializableOr
 	 * <p>Example: <code>SerializableByteGetter.of(MyClass::getSomeByte)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> SerializableByteGetter<T> of(SerializableByteGetter<T> getter) {
 		return getter;

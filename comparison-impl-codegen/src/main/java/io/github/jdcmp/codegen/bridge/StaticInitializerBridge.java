@@ -35,10 +35,10 @@ public final class StaticInitializerBridge {
 	 * Registers the given spec as dependencies for the given comparator class, then runs the given action.
 	 *
 	 * @param comparatorClass The generated comparator class
-	 * @param spec Dependencies
-	 * @param callable User action
+	 * @param spec            Dependencies
+	 * @param callable        User action
+	 * @param <T>             Type of the user action's result
 	 * @return The user action's result
-	 * @param <T> Type of the user action's result
 	 */
 	public static <T> T run(Class<?> comparatorClass, Spec<?, ?> spec, Callable<? extends T> callable) {
 		THREAD_LOCAL.set(new Registration<>(comparatorClass, spec));
@@ -105,13 +105,19 @@ public final class StaticInitializerBridge {
 			if (registration == null) {
 				throw new IllegalStateException("No spec is registered");
 			} else if (registration.comparatorClass != caller.lookupClass()) {
-				throw new IllegalArgumentException("Caller provided an unexpected class: " + caller.lookupClass());
+				throw new IllegalArgumentException("Caller provided an unexpected Lookup class: " + caller.lookupClass());
+			} else if (lacksAccess(caller)) {
+				throw new IllegalArgumentException("Caller Lookup must have PRIVATE access");
 			}
 
 			return expectedSpecClass.cast(registration.spec);
 		} finally {
 			THREAD_LOCAL.remove();
 		}
+	}
+
+	private static boolean lacksAccess(Lookup caller) {
+		return (caller.lookupModes() & Lookup.PRIVATE) != Lookup.PRIVATE;
 	}
 
 	private static final class Registration<T> {

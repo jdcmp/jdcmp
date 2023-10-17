@@ -4,11 +4,13 @@ import io.github.jdcmp.api.MissingCriteriaException;
 import io.github.jdcmp.api.builder.ordering.OrderingFallbackMode;
 import io.github.jdcmp.api.builder.ordering.OrderingFallbackMode.FallbackMapper;
 import io.github.jdcmp.api.comparator.ordering.NullHandling;
+import io.github.jdcmp.api.comparator.ordering.NullHandling.NullHandlingMapper;
 import io.github.jdcmp.api.comparator.ordering.OrderingComparator;
 import io.github.jdcmp.api.comparator.ordering.SerializableOrderingComparator;
 import io.github.jdcmp.api.documentation.ThreadSafe;
 import io.github.jdcmp.api.getter.OrderingCriterion;
 import io.github.jdcmp.api.getter.SerializableOrderingCriterion;
+import io.github.jdcmp.api.serialization.SerializationProxyRequiredException;
 import io.github.jdcmp.api.spec.ordering.BaseOrderingComparatorSpec;
 import io.github.jdcmp.api.spec.ordering.OrderingComparatorSpec;
 import io.github.jdcmp.api.spec.ordering.SerializableOrderingComparatorSpec;
@@ -17,11 +19,14 @@ import io.github.jdcmp.codegen.Fallbacks.NaturalOrderFallback;
 import io.github.jdcmp.codegen.Fallbacks.SerializableIdentityOrderFallback;
 import io.github.jdcmp.codegen.Fallbacks.SerializableNaturalOrderFallback;
 import io.github.jdcmp.codegen.bridge.StaticInitializerBridge;
+import io.github.jdcmp.codegen.customization.AvailableSerializationMode;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Method;
@@ -55,7 +60,8 @@ final class OrderingComparators {
 		return NonSerializableImpl.create(userSpec, implSpec);
 	}
 
-	public static <T> SerializableOrderingComparator<T> createSerializable(SerializableOrderingComparatorSpec<T> userSpec, ImplSpec implSpec) {
+	public static <T> SerializableOrderingComparator<T> createSerializable(
+			SerializableOrderingComparatorSpec<T> userSpec, ImplSpec implSpec) {
 		return SerializableImpl.create(userSpec, implSpec);
 	}
 
@@ -96,7 +102,7 @@ final class OrderingComparators {
 		}
 
 		private static <T> OrderingComparator<T> handleNulls(OrderingComparatorSpec<T> userSpec, OrderingComparator<T> comparator) {
-			return userSpec.getNullHandling().map(new NullHandling.NullHandlingMapper<OrderingComparator<T>>() {
+			return userSpec.getNullHandling().map(new NullHandlingMapper<OrderingComparator<T>>() {
 				@Override
 				public OrderingComparator<T> onThrow() {
 					return comparator;
@@ -129,30 +135,40 @@ final class OrderingComparators {
 				return AsmGenerator.GENERATOR_SERIALIZABLE.generate(userSpec, implSpec);
 			}
 
-			return handleNulls(userSpec, implSpec, new SerializableComparatorN<>(userSpec, implSpec));
+			SerializableComparatorN<T> nonNullComparator = new SerializableComparatorN<>(userSpec, implSpec.getSerializationMode());
+
+			return handleNulls(userSpec, implSpec, nonNullComparator);
 		}
 
-		private static <T> SerializableOrderingComparator<T> useFallback(SerializableOrderingComparatorSpec<T> userSpec, ImplSpec implSpec) {
+		private static <T> SerializableOrderingComparator<T> useFallback(
+				SerializableOrderingComparatorSpec<T> userSpec, ImplSpec implSpec) {
 			OrderingFallbackMode fallbackMode = userSpec.getFallbackMode().orElseThrow(MissingCriteriaException::of);
 
 			return fallbackMode.map(new FallbackMapper<SerializableOrderingComparator<T>>() {
 				@Override
 				public SerializableOrderingComparator<T> onIdentity() {
-					return handleNulls(userSpec, implSpec, new SerializableIdentityOrderFallback<>(userSpec));
+					return handleNulls(userSpec, implSpec, identityFallback(userSpec, implSpec));
 				}
 
 				@Override
 				public SerializableOrderingComparator<T> onNatural() {
-					return handleNulls(userSpec, implSpec, naturalOrderingFallback(userSpec));
+					return handleNulls(userSpec, implSpec, naturalOrderingFallback(userSpec, implSpec));
 				}
 			});
 		}
 
+		private static <T> SerializableIdentityOrderFallback<T> identityFallback(
+				SerializableOrderingComparatorSpec<T> userSpec,
+				ImplSpec implSpec) {
+			return new SerializableIdentityOrderFallback<>(userSpec, implSpec.getSerializationMode());
+		}
+
 		@SuppressWarnings("unchecked")
 		private static <T, C extends Comparable<? super C>> SerializableOrderingComparator<T> naturalOrderingFallback(
-				SerializableOrderingComparatorSpec<?> spec) {
-			SerializableOrderingComparatorSpec<C> cast = (SerializableOrderingComparatorSpec<C>) spec;
-			SerializableNaturalOrderFallback<C> fallback = new SerializableNaturalOrderFallback<>(cast);
+				SerializableOrderingComparatorSpec<?> userSpec,
+				ImplSpec implSpec) {
+			SerializableOrderingComparatorSpec<C> cast = (SerializableOrderingComparatorSpec<C>) userSpec;
+			SerializableNaturalOrderFallback<C> fallback = new SerializableNaturalOrderFallback<>(cast, implSpec.getSerializationMode());
 
 			return (SerializableOrderingComparator<T>) fallback;
 		}
@@ -161,7 +177,7 @@ final class OrderingComparators {
 				SerializableOrderingComparatorSpec<T> userSpec,
 				ImplSpec implSpec,
 				SerializableOrderingComparator<T> comparator) {
-			return userSpec.getNullHandling().map(new NullHandling.NullHandlingMapper<SerializableOrderingComparator<T>>() {
+			return userSpec.getNullHandling().map(new NullHandlingMapper<SerializableOrderingComparator<T>>() {
 				@Override
 				public SerializableOrderingComparator<T> onThrow() {
 					return comparator;
@@ -186,7 +202,7 @@ final class OrderingComparators {
 	}
 
 	@ThreadSafe
-	static final class ComparatorN<T> extends AbstractComparator<T> {
+	private static final class ComparatorN<T> extends AbstractComparator<T> {
 
 		ComparatorN(OrderingComparatorSpec<T> userSpec) {
 			super(userSpec);
@@ -195,28 +211,34 @@ final class OrderingComparators {
 	}
 
 	@ThreadSafe
-	static final class SerializableComparatorN<T> extends AbstractComparator<T> implements SerializableOrderingComparator<T> {
+	private static final class SerializableComparatorN<T> extends AbstractComparator<T>
+			implements SerializableOrderingComparator<T> {
 
 		private static final long serialVersionUID = 1L;
 
 		private final transient SerializableOrderingComparatorSpec<T> userSpec;
 
-		private final transient ImplSpec implSpec;
+		private final transient AvailableSerializationMode serializationMode;
 
-		SerializableComparatorN(SerializableOrderingComparatorSpec<T> userSpec, ImplSpec implSpec) {
+		SerializableComparatorN(SerializableOrderingComparatorSpec<T> userSpec, AvailableSerializationMode serializationMode) {
 			super(userSpec);
 			this.userSpec = Objects.requireNonNull(userSpec);
-			this.implSpec = Objects.requireNonNull(implSpec);
+			this.serializationMode = Objects.requireNonNull(serializationMode);
+		}
+
+		private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+			throw new SerializationProxyRequiredException();
 		}
 
 		private Object writeReplace() throws ObjectStreamException {
-			implSpec.getSerializationMode().throwIfPrevented();
+			serializationMode.throwIfPrevented();
 
 			return userSpec.toSerializedForm();
 		}
 
 	}
 
+	@ThreadSafe
 	private static abstract class AbstractComparator<T> extends EqualityComparators.AbstractComparator<T>
 			implements OrderingComparator<T> {
 
@@ -278,6 +300,7 @@ final class OrderingComparators {
 
 	}
 
+	@ThreadSafe
 	private static final class SerializableDelegatingComparator<T> implements SerializableOrderingComparator<T> {
 
 		private static final long serialVersionUID = 1L;
@@ -316,6 +339,10 @@ final class OrderingComparators {
 			return comparator.compare(o1, o2);
 		}
 
+		private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+			throw new SerializationProxyRequiredException();
+		}
+
 		private Object writeReplace() throws ObjectStreamException {
 			implSpec.getSerializationMode().throwIfPrevented();
 
@@ -328,13 +355,13 @@ final class OrderingComparators {
 	private static final class AsmGenerator<C extends OrderingComparator<?>>
 			extends BytecodeGenerator<C, BaseOrderingComparatorSpec<?, ?>> {
 
+		public static final AsmGenerator<OrderingComparator<?>> GENERATOR;
+
+		public static final AsmGenerator<SerializableOrderingComparator<?>> GENERATOR_SERIALIZABLE;
+
 		private static final int MAX_SUPPORTED_GETTERS = 32;
 
 		private static final Method SPEC_TO_SERIALIZED_FORM;
-
-		static final AsmGenerator<OrderingComparator<?>> GENERATOR;
-
-		static final AsmGenerator<SerializableOrderingComparator<?>> GENERATOR_SERIALIZABLE;
 
 		static {
 			try {
@@ -395,23 +422,19 @@ final class OrderingComparators {
 
 		private final class CompareTo {
 
-			private static final String descriptorNoBridge = "(Ljava/lang/Object;Ljava/lang/Object;)I";
-
 			private final ClassDescription cd;
 
 			private final Consts consts;
 
-			private final String descriptorTypeSafe;
-
 			CompareTo(ClassDescription cd, Consts consts) {
 				this.cd = Objects.requireNonNull(cd);
-				this.consts = consts;
-				String descriptor = consts.classToCompare.descriptor;
-				this.descriptorTypeSafe = "(" + descriptor + descriptor + ")I";
+				this.consts = Objects.requireNonNull(consts);
 			}
 
 			public void addTo(ClassWriter cw) {
-				String descriptor = consts.implSpec.generateBridgeMethods() ? descriptorTypeSafe : descriptorNoBridge;
+				String classToCompareDescriptor = consts.classToCompare.descriptor;
+				String descriptorTypeSafe = "(" + classToCompareDescriptor + classToCompareDescriptor + ")I";
+				String descriptor = consts.implSpec.generateBridgeMethods() ? descriptorTypeSafe : "(Ljava/lang/Object;Ljava/lang/Object;)I";
 
 				MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "compare", descriptor, descriptorTypeSafe, null);
 				mv.visitCode();

@@ -35,8 +35,8 @@ public interface ComparableArrayGetter<T, R extends Comparable<? super R>> exten
 	 * <p>Example: <code>ComparableArrayGetter.of(MyClass::getSomeComparableArray)</code></p>
 	 *
 	 * @param getter The getter
-	 * @param <T> Type whose instances can be compared using the getter
-	 * @param <R> Type of the criterion
+	 * @param <T>    Type whose instances can be compared using the getter
+	 * @param <R>    Type of the criterion
 	 * @return The getter
 	 */
 	static <T, R extends Comparable<? super R>> ComparableArrayGetter<T, R> of(ComparableArrayGetter<T, R> getter) {
@@ -49,8 +49,8 @@ public interface ComparableArrayGetter<T, R extends Comparable<? super R>> exten
 	 * <p>Example: <code>ComparableArrayGetter.nullsFirst(MyClass::getSomeComparableArray)</code></p>
 	 *
 	 * @param getter The getter
-	 * @param <T> Type whose instances can be compared using the getter
-	 * @param <R> Type of the criterion
+	 * @param <T>    Type whose instances can be compared using the getter
+	 * @param <R>    Type of the criterion
 	 * @return The getter
 	 */
 	static <T, R extends Comparable<? super R>> OrderingCriterion<T> nullsFirst(ComparableArrayGetter<T, R> getter) {
@@ -60,8 +60,8 @@ public interface ComparableArrayGetter<T, R extends Comparable<? super R>> exten
 	/**
 	 * Orders nulls first if either the array is null or one of its elements is null.
 	 *
-	 * @return Comparator
 	 * @param <R> Type of the criterion
+	 * @return Comparator
 	 */
 	static <R extends Comparable<? super R>> Comparator<R[]> nullsFirst() {
 		Comparator<R> elementComparator = Comparator.nullsFirst(Comparator.naturalOrder());
@@ -75,9 +75,9 @@ public interface ComparableArrayGetter<T, R extends Comparable<? super R>> exten
 	 * <p>Example: <code>ComparableArrayGetter.nullsLast(MyClass::getSomeComparableArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
+	 * @param <R>    Comparable type with natural ordering
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
-	 * @param <R> Comparable type with natural ordering
 	 */
 	static <T, R extends Comparable<? super R>> OrderingCriterion<T> nullsLast(ComparableArrayGetter<T, R> getter) {
 		return new ComparatorGetter<>(getter, nullsLast());
@@ -86,8 +86,8 @@ public interface ComparableArrayGetter<T, R extends Comparable<? super R>> exten
 	/**
 	 * Orders nulls last if either the array is null or one of its elements is null.
 	 *
-	 * @return Comparator
 	 * @param <R> Type of the criterion
+	 * @return Comparator
 	 */
 	static <R extends Comparable<? super R>> Comparator<R[]> nullsLast() {
 		Comparator<R> elementComparator = Comparator.nullsLast(Comparator.naturalOrder());
@@ -99,8 +99,8 @@ public interface ComparableArrayGetter<T, R extends Comparable<? super R>> exten
 	 * Creates a lexicographical comparator using the given array element comparator. Does not accept null array references.
 	 *
 	 * @param elementComparator Comparator for array elements
+	 * @param <R>               Array component type
 	 * @return Comparator
-	 * @param <R> Array component type
 	 */
 	static <R extends Comparable<? super R>> Comparator<R[]> compareElementsBy(Comparator<R> elementComparator) {
 		return (a, b) -> compareLexicographically(a, b, elementComparator);
@@ -109,8 +109,8 @@ public interface ComparableArrayGetter<T, R extends Comparable<? super R>> exten
 	/**
 	 * Compares two arrays lexicographically.
 	 *
-	 * @param a Left array
-	 * @param b Right array
+	 * @param a   Left array
+	 * @param b   Right array
 	 * @param <C> Comparable type with natural ordering
 	 * @return Comparison result
 	 */
@@ -121,11 +121,11 @@ public interface ComparableArrayGetter<T, R extends Comparable<? super R>> exten
 	/**
 	 * Compares two arrays lexicographically.
 	 *
-	 * @param a Left array
-	 * @param b Right array
+	 * @param a          Left array
+	 * @param b          Right array
 	 * @param comparator Comparator
+	 * @param <C>        Generic array component type
 	 * @return Comparison result
-	 * @param <C> Generic array component type
 	 */
 	static <C> int compareLexicographically(C[] a, C[] b, Comparator<? super C> comparator) {
 		Objects.requireNonNull(a);

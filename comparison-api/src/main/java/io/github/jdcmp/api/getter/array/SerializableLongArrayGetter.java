@@ -19,8 +19,8 @@ public interface SerializableLongArrayGetter<T> extends
 	 * <p>Example: <code>SerializableLongArrayGetter.of(MyClass::getSomeLongArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> SerializableLongArrayGetter<T> of(SerializableLongArrayGetter<T> getter) {
 		return getter;

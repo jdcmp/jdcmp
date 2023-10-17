@@ -6,9 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.util.Objects;
 import java.util.ServiceLoader;
-import java.util.function.Supplier;
 
 /**
  * <p>This static factory allows obtaining and managing instances of {@link ComparatorProvider}. Default providers can be configured via
@@ -64,8 +62,8 @@ public final class ComparatorProviders {
 	 * Otherwise, the {@link #load()} method is more convenient.
 	 *
 	 * @param clazz The provider's class
+	 * @param <T>   Type of the provider
 	 * @return An instance of the given provider
-	 * @param <T> Type of the provider
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends ComparatorProvider> T load(Class<? extends T> clazz) {
@@ -94,9 +92,9 @@ public final class ComparatorProviders {
 	@ThreadSafe
 	private static final class Cache extends ClassValue<ComparatorProvider> {
 
-		private static final WeakCache DEFAULT = new WeakCache(Cache::loadFromServiceLoader);
+		private static final WeakCache DEFAULT = new WeakCache();
 
-		private static final WeakCache SERIALIZATION = new WeakCache(Cache::loadFromServiceLoader);
+		private static final WeakCache SERIALIZATION = new WeakCache();
 
 		@Override
 		protected ComparatorProvider computeValue(Class<?> clazz) {
@@ -107,27 +105,12 @@ public final class ComparatorProviders {
 			@SuppressWarnings("unchecked")
 			Class<? extends ComparatorProvider> providerClass = (Class<? extends ComparatorProvider>) clazz;
 
-			return loadSpecificImpl(providerClass);
+			return loadProvider(providerClass);
 		}
 
-		private static ComparatorProvider loadSpecificImpl(Class<? extends ComparatorProvider> providerClass) {
-			Constructor<? extends ComparatorProvider> constructor;
-
-			try {
-				constructor = providerClass.getDeclaredConstructor();
-			} catch (NoSuchMethodException e) {
-				String message = String.format("Implementation %s violates the contract of %s. The no-args constructor is missing.",
-						providerClass.getCanonicalName(),
-						ComparatorProvider.class.getCanonicalName());
-				throw new IllegalArgumentException(message, e);
-			}
-
-			if (!Modifier.isPublic(constructor.getModifiers())) {
-				String message = String.format("Implementation %s violates the contract of %s. The no-args constructor is not public.",
-						providerClass.getCanonicalName(),
-						ComparatorProvider.class.getCanonicalName());
-				throw new IllegalArgumentException(message);
-			}
+		private static ComparatorProvider loadProvider(Class<? extends ComparatorProvider> providerClass) {
+			Constructor<? extends ComparatorProvider> constructor = findConstructor(providerClass);
+			validate(providerClass, constructor);
 
 			try {
 				return constructor.newInstance();
@@ -136,19 +119,24 @@ public final class ComparatorProviders {
 			}
 		}
 
-		private static ComparatorProvider loadFromServiceLoader() {
-			for (ComparatorProvider provider : ServiceLoader.load(ComparatorProvider.class)) {
-				return provider;
+		private static Constructor<? extends ComparatorProvider> findConstructor(Class<? extends ComparatorProvider> providerClass) {
+			try {
+				return providerClass.getDeclaredConstructor();
+			} catch (NoSuchMethodException e) {
+				String message = String.format("Implementation %s violates the contract of %s. The no-args constructor is missing.",
+						providerClass.getCanonicalName(),
+						ComparatorProvider.class.getCanonicalName());
+				throw new IllegalArgumentException(message, e);
 			}
-
-			throw missingImplementationException();
 		}
 
-		private static UnsupportedOperationException missingImplementationException() throws UnsupportedOperationException {
-			String className = ComparatorProvider.class.getCanonicalName();
-
-			return new UnsupportedOperationException("Did not find an appropriate implementation of "
-					+ className + " on the class path using " + ServiceLoader.class.getName() + ".");
+		private static void validate(Class<? extends ComparatorProvider> providerClass, Constructor<? extends ComparatorProvider> constructor) {
+			if (!Modifier.isPublic(constructor.getModifiers())) {
+				String message = String.format("Implementation %s violates the contract of %s. The no-args constructor is not public.",
+						providerClass.getCanonicalName(),
+						ComparatorProvider.class.getCanonicalName());
+				throw new IllegalArgumentException(message);
+			}
 		}
 
 	}
@@ -156,15 +144,9 @@ public final class ComparatorProviders {
 	@ThreadSafe
 	private static final class WeakCache {
 
-		private final Supplier<? extends ComparatorProvider> factory;
-
 		private volatile @Nullable WeakReference<ComparatorProvider> configured;
 
 		private volatile @Nullable WeakReference<ComparatorProvider> cached;
-
-		WeakCache(Supplier<? extends ComparatorProvider> factory) {
-			this.factory = Objects.requireNonNull(factory);
-		}
 
 		void setConfigured(ComparatorProvider comparatorProvider) {
 			this.configured = new WeakReference<>(comparatorProvider);
@@ -180,7 +162,7 @@ public final class ComparatorProviders {
 			ComparatorProvider comparatorProvider = unwrap(this.cached);
 
 			if (comparatorProvider == null) {
-				this.cached = new WeakReference<>(comparatorProvider = factory.get());
+				this.cached = new WeakReference<>(comparatorProvider = loadFromServiceLoader());
 			}
 
 			return comparatorProvider;
@@ -194,6 +176,21 @@ public final class ComparatorProviders {
 
 		private static <T> @Nullable T unwrap(@Nullable WeakReference<T> ref) {
 			return ref == null ? null : ref.get();
+		}
+
+		static ComparatorProvider loadFromServiceLoader() {
+			for (ComparatorProvider provider : ServiceLoader.load(ComparatorProvider.class)) {
+				return provider;
+			}
+
+			throw missingImplementationException();
+		}
+
+		private static UnsupportedOperationException missingImplementationException() throws UnsupportedOperationException {
+			String className = ComparatorProvider.class.getCanonicalName();
+
+			return new UnsupportedOperationException("Did not find an appropriate implementation of "
+					+ className + " on the class path using " + ServiceLoader.class.getName() + ".");
 		}
 
 	}

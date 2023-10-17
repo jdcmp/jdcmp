@@ -3,24 +3,19 @@ package io.github.jdcmp.codegen;
 import io.github.jdcmp.api.Comparators;
 import io.github.jdcmp.api.HashParameters;
 import io.github.jdcmp.api.comparator.equality.EqualityComparator;
-import io.github.jdcmp.api.comparator.equality.SerializableEqualityComparator;
-import io.github.jdcmp.api.comparator.ordering.NullHandling;
 import io.github.jdcmp.api.comparator.ordering.OrderingComparator;
-import io.github.jdcmp.api.comparator.ordering.SerializableOrderingComparator;
 import io.github.jdcmp.api.getter.array.CharArrayGetter;
 import io.github.jdcmp.api.getter.array.ComparableArrayGetter;
 import io.github.jdcmp.api.getter.array.IntArrayGetter;
 import io.github.jdcmp.api.getter.object.ComparableGetter;
 import io.github.jdcmp.api.getter.object.ObjectGetter;
 import io.github.jdcmp.api.getter.object.SerializableComparableGetter;
-import io.github.jdcmp.api.getter.object.SerializableObjectGetter;
 import io.github.jdcmp.api.getter.primitive.IntGetter;
 import io.github.jdcmp.api.getter.primitive.SerializableIntGetter;
 import io.github.jdcmp.codegen.contract.EventHandler;
 import io.github.jdcmp.codegen.customization.AvailableClassDefiner;
 import io.github.jdcmp.codegen.customization.AvailableInitializationMode;
 import io.github.jdcmp.codegen.customization.AvailableInstantiator;
-import io.github.jdcmp.codegen.customization.AvailableSerializationMode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -29,10 +24,8 @@ import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 import org.mockito.Mockito;
 
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,57 +143,6 @@ public class CodegenProviderTest {
 			Assertions.assertTrue(comparator.areEqual(original, original));
 			Assertions.assertFalse(comparator.areEqual(original, copy));
 			Assertions.assertFalse(comparator.areEqual(copy, original));
-		}
-
-		@Test
-		public void serialize_compatible() throws IOException {
-			provider.setSerializationMode(AvailableSerializationMode.COMPATIBLE);
-
-			SerializableEqualityComparator<String> comparator0 = Comparators.equality()
-					.serializable()
-					.fallbackToIdentity(String.class)
-					.hashParameters(HashParameters.of(42, 84))
-					.build(provider);
-			SerializableEqualityComparator<String> comparator1 = Comparators.equality()
-					.serializable()
-					.requireAtLeastOneGetter(String.class)
-					.use(SerializableIntGetter.of(String::length))
-					.hashParameters(HashParameters.of(42, 84))
-					.build(provider);
-
-			EqualityComparator<String> deserialized0 = SerializationUtils.deserialize(SerializationUtils.serialize(comparator0));
-			EqualityComparator<String> deserialized1 = SerializationUtils.deserialize(SerializationUtils.serialize(comparator1));
-
-			Assertions.assertEquals(42, deserialized0.hash(""));
-			Assertions.assertEquals(42 * 84 + " ".length(), deserialized1.hash(" "));
-		}
-
-		@Test
-		public void serialize_incompatible() {
-			provider.setSerializationMode(AvailableSerializationMode.INCOMPATIBLE);
-
-			SerializableEqualityComparator<String> comparator = Comparators.equality()
-					.serializable()
-					.requireAtLeastOneGetter(String.class)
-					.use(SerializableObjectGetter.of(String::length))
-					.hashParameters(HashParameters.of(42, 84))
-					.build(provider);
-
-			Assertions.assertThrows(Exception.class, () -> SerializationUtils.deserialize(SerializationUtils.serialize(comparator)));
-		}
-
-		@Test
-		public void serialize_hostile() {
-			provider.setSerializationMode(AvailableSerializationMode.HOSTILE);
-
-			SerializableEqualityComparator<String> comparator = Comparators.equality()
-					.serializable()
-					.requireAtLeastOneGetter(String.class)
-					.use(SerializableIntGetter.of(String::length))
-					.hashParameters(HashParameters.of(42, 84))
-					.build(provider);
-
-			Assertions.assertThrows(Exception.class, () -> SerializationUtils.serialize(comparator));
 		}
 
 		@Test
@@ -343,70 +285,6 @@ public class CodegenProviderTest {
 			List<String> copy = new ArrayList<>(list);
 			copy.sort(comparator);
 			Assertions.assertEquals(list, copy);
-		}
-
-		@Test
-		public void serialize_compatible() throws Throwable {
-			provider.setSerializationMode(AvailableSerializationMode.COMPATIBLE);
-
-			SerializableOrderingComparator<String> comparator0 = Comparators.ordering()
-					.serializable()
-					.fallbackToIdentity(String.class)
-					.hashParameters(HashParameters.of(42, 84))
-					.build(provider);
-			SerializableOrderingComparator<String> comparator1 = Comparators.ordering()
-					.serializable()
-					.fallbackToIdentity(String.class)
-					.hashParameters(HashParameters.of(42, 84))
-					.use(SerializableIntGetter.of(String::length))
-					.build(provider);
-
-			OrderingComparator<String> deserialized0 = SerializationUtils.deserialize(SerializationUtils.serialize(comparator0));
-			OrderingComparator<String> deserialized1 = SerializationUtils.deserialize(SerializationUtils.serialize(comparator1));
-
-			Assertions.assertEquals(42, deserialized0.hash(""));
-			Assertions.assertEquals(42 * 84 + " ".length(), deserialized1.hash(" "));
-		}
-
-		@Test
-		public void serialize_incompatible() throws Throwable {
-			provider.setSerializationMode(AvailableSerializationMode.INCOMPATIBLE);
-			provider.setGenerateBridgeMethods(true);
-
-			SerializableOrderingComparator<String> comparator = Comparators.ordering()
-					.serializable()
-					.fallbackToIdentity(String.class)
-					.hashParameters(HashParameters.of(42, 84))
-					.use(SerializableIntGetter.of(String::length))
-					.build(provider);
-
-			Class<?> comparatorClass = comparator.getClass();
-			Method[] methods = comparatorClass.getDeclaredMethods();
-
-			Method hash = comparatorClass.getDeclaredMethod("hash", String.class);
-			Method bridgeHash = comparatorClass.getDeclaredMethod("hash", Object.class);
-			Method areEqual = comparatorClass.getDeclaredMethod("areEqual", String.class, Object.class);
-			Method bridgeAreEqual = comparatorClass.getDeclaredMethod("areEqual", Object.class, Object.class);
-			Method compare = comparatorClass.getDeclaredMethod("compare", String.class, String.class);
-			Method bridgeCompare = comparatorClass.getDeclaredMethod("compare", Object.class, Object.class);
-
-			org.assertj.core.api.Assertions.assertThat(methods)
-					.containsOnly(hash, bridgeHash, areEqual, bridgeAreEqual, compare, bridgeCompare);
-		}
-
-		@Test
-		public void serialize_hostile() {
-			provider.setSerializationMode(AvailableSerializationMode.HOSTILE);
-
-			SerializableOrderingComparator<String> comparator = Comparators.ordering()
-					.serializable()
-					.fallbackToNaturalOrdering(String.class)
-					.nullHandling(NullHandling.THROW)
-					.hashParameters(HashParameters.of(42, 84))
-					.use(SerializableIntGetter.of(String::length))
-					.build(provider);
-
-			Assertions.assertThrows(Exception.class, () -> SerializationUtils.serialize(comparator));
 		}
 
 		@Test

@@ -61,8 +61,8 @@ public interface BooleanArrayGetter<T> extends OrderingCriterion<T>, GenericGett
 	 * <p>Example: <code>BooleanArrayGetter.of(MyClass::getSomeBooleanArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> BooleanArrayGetter<T> of(BooleanArrayGetter<T> getter) {
 		return getter;

@@ -14,8 +14,8 @@ public interface ObjectGetter<T> extends GenericGetter<T, Object> {
 	 * <p>Example: <code>ObjectGetter.of(MyClass::getSomeObject)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> ObjectGetter<T> of(ObjectGetter<T> getter) {
 		return getter;

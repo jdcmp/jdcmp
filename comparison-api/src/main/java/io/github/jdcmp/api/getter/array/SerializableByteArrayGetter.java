@@ -19,8 +19,8 @@ public interface SerializableByteArrayGetter<T> extends
 	 * <p>Example: <code>ByteArrayGetter.of(MyClass::getSomeByteArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> SerializableByteArrayGetter<T> serializable(SerializableByteArrayGetter<T> getter) {
 		return getter;

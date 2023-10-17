@@ -1,6 +1,7 @@
 package io.github.jdcmp.api.comparator.ordering;
 
 
+import io.github.jdcmp.api.comparator.equality.SerializableEqualityComparator;
 import io.github.jdcmp.api.documentation.ThreadSafe;
 
 import java.io.Serializable;
@@ -11,6 +12,6 @@ import java.io.Serializable;
  * @param <T> Type whose instances can be compared
  */
 @ThreadSafe
-public interface SerializableOrderingComparator<T> extends OrderingComparator<T>, Serializable {
+public interface SerializableOrderingComparator<T> extends OrderingComparator<T>, SerializableEqualityComparator<T>, Serializable {
 
 }

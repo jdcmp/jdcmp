@@ -26,8 +26,8 @@ public interface ObjectArrayGetter<T> extends GenericArrayGetter<T, Object> {
 	 * <p>Example: <code>ObjectArrayGetter.of(MyClass::getSomeObjectArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> ObjectArrayGetter<T> of(ObjectArrayGetter<T> getter) {
 		return getter;

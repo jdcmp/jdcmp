@@ -61,8 +61,8 @@ public interface LongArrayGetter<T> extends OrderingCriterion<T>, GenericGetter<
 	 * <p>Example: <code>LongArrayGetter.of(MyClass::getSomeLongArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> LongArrayGetter<T> of(LongArrayGetter<T> getter) {
 		return getter;

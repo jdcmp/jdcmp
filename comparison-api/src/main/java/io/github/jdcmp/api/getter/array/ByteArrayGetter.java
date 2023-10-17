@@ -61,8 +61,8 @@ public interface ByteArrayGetter<T> extends OrderingCriterion<T>, GenericGetter<
 	 * <p>Example: <code>ByteArrayGetter.of(MyClass::getSomeByteArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> ByteArrayGetter<T> of(ByteArrayGetter<T> getter) {
 		return getter;

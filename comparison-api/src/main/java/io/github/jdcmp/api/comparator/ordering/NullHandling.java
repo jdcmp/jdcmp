@@ -59,8 +59,8 @@ public enum NullHandling {
 	 * Maps the enum constant using the given mapper. See {@link NullHandlingMapper}.
 	 *
 	 * @param mapper The mapper
+	 * @param <T>    Type of the return value
 	 * @return A user-supplied return value
-	 * @param <T> Type of the return value
 	 */
 	abstract public <T> T map(NullHandlingMapper<T> mapper);
 

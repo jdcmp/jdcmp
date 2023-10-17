@@ -26,9 +26,9 @@ public interface MultidimensionalArrayGetter<T, R> extends GenericArrayGetter<T,
 	 * <p>Example: <code>MultidimensionalArrayGetter.of(MyClass::getSomeMultidimensionalArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
+	 * @param <R>    Type of the criterion
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
-	 * @param <R> Type of the criterion
 	 */
 	static <T, R> MultidimensionalArrayGetter<T, R> of(MultidimensionalArrayGetter<T, R> getter) {
 		return getter;

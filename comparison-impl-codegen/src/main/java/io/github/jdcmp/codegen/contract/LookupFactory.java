@@ -7,7 +7,6 @@ import java.lang.invoke.MethodHandles.Lookup;
 
 /**
  * Provides {@link Lookup} instances for a given type.
- *
  */
 @ThreadSafe
 public interface LookupFactory {

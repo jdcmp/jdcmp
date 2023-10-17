@@ -23,7 +23,7 @@ public interface EventHandler {
 	 * Called after a generated class has been successfully defined (i.e. loaded via ClassLoader or Lookup).
 	 *
 	 * @param comparatorClass Generated comparator class
-	 * @param bytes Bytes used to define the generated class
+	 * @param bytes           Bytes used to define the generated class
 	 * @throws Exception If event handling fails; simplifies development by not forcing try around checked exceptions
 	 */
 	default void onClassDefined(Class<?> comparatorClass, byte[] bytes) throws Exception {
@@ -33,7 +33,7 @@ public interface EventHandler {
 	 * Called after a generated class has been successfully instantiated.
 	 *
 	 * @param comparatorClass Generated comparator class
-	 * @param bytes Bytes used to define the generated class
+	 * @param bytes           Bytes used to define the generated class
 	 * @throws Exception If event handling fails; simplifies development by not forcing try around checked exceptions
 	 */
 	default void onClassInstantiated(Class<?> comparatorClass, byte[] bytes) throws Exception {

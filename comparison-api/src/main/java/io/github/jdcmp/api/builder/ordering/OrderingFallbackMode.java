@@ -32,8 +32,8 @@ public enum OrderingFallbackMode {
 	 * Maps the enum constant using the given mapper. See {@link FallbackMapper}.
 	 *
 	 * @param mapper The mapper
+	 * @param <T>    Type of the return value
 	 * @return A user-supplied return value
-	 * @param <T> Type of the return value
 	 */
 	abstract public <T> T map(FallbackMapper<T> mapper);
 

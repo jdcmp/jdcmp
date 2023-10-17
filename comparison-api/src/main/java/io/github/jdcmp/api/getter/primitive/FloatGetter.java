@@ -39,8 +39,8 @@ public interface FloatGetter<T> extends OrderingCriterion<T> {
 	 * <p>Example: <code>FloatGetter.of(MyClass::getSomeFloat)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> FloatGetter<T> of(FloatGetter<T> getter) {
 		return getter;

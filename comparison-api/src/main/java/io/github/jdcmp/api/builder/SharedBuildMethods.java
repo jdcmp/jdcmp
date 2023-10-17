@@ -35,7 +35,7 @@ public interface SharedBuildMethods<C> {
 	 * Creates the comparator using the given provider and lookup.
 	 *
 	 * @param comparatorProvider A provider
-	 * @param lookup A lookup
+	 * @param lookup             A lookup
 	 * @return A new comparator instance
 	 */
 	C build(ComparatorProvider comparatorProvider, MethodHandles.Lookup lookup);

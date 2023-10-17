@@ -33,8 +33,8 @@ public interface LongGetter<T> extends OrderingCriterion<T>, ToLongFunction<T> {
 	 * <p>Example: <code>LongGetter.of(MyClass::getSomeLong)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> LongGetter<T> of(LongGetter<T> getter) {
 		return getter;

@@ -14,21 +14,21 @@ import io.github.jdcmp.api.documentation.ThreadSafe;
  * <p>
  * There are two types of comparators:
  * <dl>
- * 	<dt>{@link EqualityComparator}</dt>
- * 		<dd>
- * 			Provides implementations for the following methods:
- * 			<ul>
- *             	<li>{@link Object#hashCode()}</li>
- *             	<li>{@link Object#equals(Object)}</li>
- *         	</ul>
- * 		</dd>
- * 		<dt>{@link OrderingComparator}</dt>
- * 		<dd>
- * 			Provides implementations for the following methods:
- *         	<ul>
- *         		<li>{@link Object#hashCode()}</li>
- *         		<li>{@link Object#equals(Object)}</li>
- *				<li>{@link Comparable#compareTo(Object)}</li>
+ *     <dt>{@link EqualityComparator}</dt>
+ *     <dd>
+ *         Provides implementations for the following methods:
+ *         <ul>
+ *             <li>{@link Object#hashCode()}</li>
+ *             <li>{@link Object#equals(Object)}</li>
+ *         </ul>
+ *     </dd>
+ *     <dt>{@link OrderingComparator}</dt>
+ *     <dd>
+ *         Provides implementations for the following methods:
+ *         <ul>
+ *             <li>{@link Object#hashCode()}</li>
+ *             <li>{@link Object#equals(Object)}</li>
+ *             <li>{@link Comparable#compareTo(Object)}</li>
  *         </ul>
  *     </dd>
  * </dl>

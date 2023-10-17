@@ -6,7 +6,6 @@ import io.github.jdcmp.api.builder.equality.EqualityFallbackMode;
 import io.github.jdcmp.api.builder.equality.EqualityFallbackMode.FallbackMapper;
 import io.github.jdcmp.api.comparator.equality.EqualityComparator;
 import io.github.jdcmp.api.comparator.equality.SerializableEqualityComparator;
-import io.github.jdcmp.api.documentation.NotThreadSafe;
 import io.github.jdcmp.api.documentation.ThreadSafe;
 import io.github.jdcmp.api.getter.EqualityCriterion;
 import io.github.jdcmp.api.getter.SerializableEqualityCriterion;
@@ -29,7 +28,6 @@ import java.io.ObjectStreamException;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Method;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 import static org.objectweb.asm.Opcodes.ARETURN;
@@ -76,7 +74,7 @@ final class EqualityComparators {
 
 		static <T> SerializableEqualityComparator<T> create(SerializableEqualityComparatorSpec<T> userSpec, ImplSpec implSpec) {
 			if (userSpec.hasNoGetters()) {
-				return useFallback(userSpec);
+				return useFallback(userSpec, implSpec);
 			} else if (AsmGenerator.supports(userSpec)) {
 				return AsmGenerator.GENERATOR_SERIALIZABLE.generate(userSpec, implSpec);
 			}
@@ -84,20 +82,23 @@ final class EqualityComparators {
 			return new SerializableComparatorN<>(userSpec, implSpec);
 		}
 
-		private static <T> SerializableEqualityComparator<T> useFallback(SerializableEqualityComparatorSpec<T> userSpec) {
+		private static <T> SerializableEqualityComparator<T> useFallback(
+				SerializableEqualityComparatorSpec<T> userSpec,
+				ImplSpec implSpec) {
 			EqualityFallbackMode fallbackMode = userSpec.getFallbackMode().orElseThrow(MissingCriteriaException::of);
 
 			return fallbackMode.map(new FallbackMapper<SerializableEqualityComparator<T>>() {
 				@Override
 				public SerializableEqualityComparator<T> onIdentity() {
-					return new SerializableIdentityFallback<>(userSpec);
+					return new SerializableIdentityFallback<>(userSpec, implSpec.getSerializationMode());
 				}
 			});
 		}
 
 	}
 
-	static final class ComparatorN<T> extends AbstractComparator<T> implements EqualityComparator<T> {
+	@ThreadSafe
+	private static final class ComparatorN<T> extends AbstractComparator<T> implements EqualityComparator<T> {
 
 		ComparatorN(EqualityComparatorSpec<T> userSpec) {
 			super(userSpec);
@@ -105,7 +106,9 @@ final class EqualityComparators {
 
 	}
 
-	static final class SerializableComparatorN<T> extends AbstractComparator<T> implements SerializableEqualityComparator<T> {
+	@ThreadSafe
+	private static final class SerializableComparatorN<T> extends AbstractComparator<T>
+			implements SerializableEqualityComparator<T> {
 
 		private static final long serialVersionUID = 1L;
 
@@ -131,6 +134,7 @@ final class EqualityComparators {
 
 	}
 
+	@ThreadSafe
 	static abstract class AbstractComparator<T> implements EqualityComparator<T> {
 
 		private final Spec<T, ?> userSpec;
@@ -199,15 +203,15 @@ final class EqualityComparators {
 	private static final class AsmGenerator<C extends EqualityComparator<?>>
 			extends BytecodeGenerator<C, BaseEqualityComparatorSpec<?, ?>> {
 
+		public static final AsmGenerator<EqualityComparator<?>> GENERATOR;
+
+		public static final AsmGenerator<SerializableEqualityComparator<?>> GENERATOR_SERIALIZABLE;
+
 		private static final int MAX_SUPPORTED_GETTERS = 32;
 
-		public static final String SPEC_TO_SERIALIZED_FORM_NAME = "toSerializedForm";
+		private static final String SPEC_TO_SERIALIZED_FORM_NAME = "toSerializedForm";
 
 		private static final String SPEC_TO_SERIALIZED_FORM_DESCRIPTOR;
-
-		static final AsmGenerator<EqualityComparator<?>> GENERATOR;
-
-		static final AsmGenerator<SerializableEqualityComparator<?>> GENERATOR_SERIALIZABLE;
 
 		static {
 			try {

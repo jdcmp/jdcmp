@@ -61,8 +61,8 @@ public interface CharArrayGetter<T> extends OrderingCriterion<T>, GenericGetter<
 	 * <p>Example: <code>CharArrayGetter.of(MyClass::getSomeCharArray)</code></p>
 	 *
 	 * @param getter The getter
+	 * @param <T>    Type whose instances can be compared using the getter
 	 * @return The getter
-	 * @param <T> Type whose instances can be compared using the getter
 	 */
 	static <T> CharArrayGetter<T> of(CharArrayGetter<T> getter) {
 		return getter;
