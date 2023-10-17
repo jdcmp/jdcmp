@@ -432,18 +432,15 @@ abstract class BytecodeGenerator<C extends EqualityComparator<?>, U extends Spec
 
 		final class AreEqual {
 
-			final String descriptorNoBridge = "(Ljava/lang/Object;Ljava/lang/Object;)Z";
-
 			final ClassDescription cd;
-
-			final String descriptorTypeSafe;
 
 			AreEqual(ClassDescription cd) {
 				this.cd = Objects.requireNonNull(cd);
-				this.descriptorTypeSafe = "(" + consts.classToCompare.descriptor + "Ljava/lang/Object;)Z";
 			}
 
 			void addTo(ClassWriter cw) {
+				final String descriptorTypeSafe = "(" + consts.classToCompare.descriptor + "Ljava/lang/Object;)Z";
+				final String descriptorNoBridge = "(Ljava/lang/Object;Ljava/lang/Object;)Z";
 				final String descriptor = consts.implSpec.generateBridgeMethods() ? descriptorTypeSafe : descriptorNoBridge;
 				final String signature = descriptorTypeSafe;
 				final String getterInternalName = config.getterType.internalName;
@@ -456,17 +453,8 @@ abstract class BytecodeGenerator<C extends EqualityComparator<?>, U extends Spec
 				Label label0 = new Label();
 				mv.visitLabel(label0);
 
-				if (consts.userSpec.useStrictTypes()) {
-					mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "classToCompare", "Ljava/lang/Class;");
-					mv.visitInsn(DUP);
-					mv.visitVarInsn(ASTORE, 3);
-					mv.visitVarInsn(ALOAD, 1);
-					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "cast", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
-				} else {
-					mv.visitVarInsn(ALOAD, 1);
-				}
+				putObjectsToCompareOntoStack(mv);
 
-				mv.visitVarInsn(ALOAD, 2);
 				Label label1 = new Label();
 				mv.visitJumpInsn(IF_ACMPNE, label1);
 
@@ -537,6 +525,20 @@ abstract class BytecodeGenerator<C extends EqualityComparator<?>, U extends Spec
 				if (consts.implSpec.generateBridgeMethods()) {
 					addBridgeMethod(cw);
 				}
+			}
+
+			private void putObjectsToCompareOntoStack(MethodVisitor mv) {
+				if (consts.userSpec.useStrictTypes()) {
+					mv.visitFieldInsn(GETSTATIC, cd.generatedInternalName, "classToCompare", "Ljava/lang/Class;");
+					mv.visitInsn(DUP);
+					mv.visitVarInsn(ASTORE, 3);
+					mv.visitVarInsn(ALOAD, 1);
+					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "cast", "(Ljava/lang/Object;)Ljava/lang/Object;", false);
+				} else {
+					mv.visitVarInsn(ALOAD, 1);
+				}
+
+				mv.visitVarInsn(ALOAD, 2);
 			}
 
 			private void addBridgeMethod(ClassWriter cw) {

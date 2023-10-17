@@ -203,15 +203,15 @@ final class EqualityComparators {
 	private static final class AsmGenerator<C extends EqualityComparator<?>>
 			extends BytecodeGenerator<C, BaseEqualityComparatorSpec<?, ?>> {
 
+		public static final AsmGenerator<EqualityComparator<?>> GENERATOR;
+
+		public static final AsmGenerator<SerializableEqualityComparator<?>> GENERATOR_SERIALIZABLE;
+
 		private static final int MAX_SUPPORTED_GETTERS = 32;
 
-		public static final String SPEC_TO_SERIALIZED_FORM_NAME = "toSerializedForm";
+		private static final String SPEC_TO_SERIALIZED_FORM_NAME = "toSerializedForm";
 
 		private static final String SPEC_TO_SERIALIZED_FORM_DESCRIPTOR;
-
-		static final AsmGenerator<EqualityComparator<?>> GENERATOR;
-
-		static final AsmGenerator<SerializableEqualityComparator<?>> GENERATOR_SERIALIZABLE;
 
 		static {
 			try {

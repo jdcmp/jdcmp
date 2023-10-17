@@ -60,7 +60,8 @@ final class OrderingComparators {
 		return NonSerializableImpl.create(userSpec, implSpec);
 	}
 
-	public static <T> SerializableOrderingComparator<T> createSerializable(SerializableOrderingComparatorSpec<T> userSpec, ImplSpec implSpec) {
+	public static <T> SerializableOrderingComparator<T> createSerializable(
+			SerializableOrderingComparatorSpec<T> userSpec, ImplSpec implSpec) {
 		return SerializableImpl.create(userSpec, implSpec);
 	}
 
@@ -139,13 +140,14 @@ final class OrderingComparators {
 			return handleNulls(userSpec, implSpec, nonNullComparator);
 		}
 
-		private static <T> SerializableOrderingComparator<T> useFallback(SerializableOrderingComparatorSpec<T> userSpec, ImplSpec implSpec) {
+		private static <T> SerializableOrderingComparator<T> useFallback(
+				SerializableOrderingComparatorSpec<T> userSpec, ImplSpec implSpec) {
 			OrderingFallbackMode fallbackMode = userSpec.getFallbackMode().orElseThrow(MissingCriteriaException::of);
 
 			return fallbackMode.map(new FallbackMapper<SerializableOrderingComparator<T>>() {
 				@Override
 				public SerializableOrderingComparator<T> onIdentity() {
-					return handleNulls(userSpec, implSpec, new SerializableIdentityOrderFallback<>(userSpec, implSpec.getSerializationMode()));
+					return handleNulls(userSpec, implSpec, identityFallback(userSpec, implSpec));
 				}
 
 				@Override
@@ -153,6 +155,12 @@ final class OrderingComparators {
 					return handleNulls(userSpec, implSpec, naturalOrderingFallback(userSpec, implSpec));
 				}
 			});
+		}
+
+		private static <T> SerializableIdentityOrderFallback<T> identityFallback(
+				SerializableOrderingComparatorSpec<T> userSpec,
+				ImplSpec implSpec) {
+			return new SerializableIdentityOrderFallback<>(userSpec, implSpec.getSerializationMode());
 		}
 
 		@SuppressWarnings("unchecked")
@@ -347,13 +355,13 @@ final class OrderingComparators {
 	private static final class AsmGenerator<C extends OrderingComparator<?>>
 			extends BytecodeGenerator<C, BaseOrderingComparatorSpec<?, ?>> {
 
+		public static final AsmGenerator<OrderingComparator<?>> GENERATOR;
+
+		public static final AsmGenerator<SerializableOrderingComparator<?>> GENERATOR_SERIALIZABLE;
+
 		private static final int MAX_SUPPORTED_GETTERS = 32;
 
 		private static final Method SPEC_TO_SERIALIZED_FORM;
-
-		static final AsmGenerator<OrderingComparator<?>> GENERATOR;
-
-		static final AsmGenerator<SerializableOrderingComparator<?>> GENERATOR_SERIALIZABLE;
 
 		static {
 			try {

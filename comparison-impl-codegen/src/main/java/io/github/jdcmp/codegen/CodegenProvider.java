@@ -247,7 +247,7 @@ public final class CodegenProvider implements ComparatorProvider {
 		try {
 			return new OptionalClassDefiners(
 					ClassDefinerHolder.vmAnonymous(classDefiners),
-					ClassDefinerHolder.lookupHiddenClassWithClass(classDefiners),
+					ClassDefinerHolder.lookupHiddenClassWithClassData(classDefiners),
 					ClassDefinerHolder.lookupHidden(classDefiners),
 					ClassDefinerHolder.lookup(classDefiners),
 					ClassDefinerHolder.classLoader(classDefiners)
@@ -393,7 +393,7 @@ public final class CodegenProvider implements ComparatorProvider {
 			return VM_ANONYMOUS.load(classDefiners, AvailableClassDefiner.VM_ANONYMOUS);
 		}
 
-		static @Nullable LookupHiddenClassWithClassDataDefiner lookupHiddenClassWithClass(
+		static @Nullable LookupHiddenClassWithClassDataDefiner lookupHiddenClassWithClassData(
 				Collection<AvailableClassDefiner> classDefiners) {
 			return LOOKUP_HIDDEN_CLASS_WITH_CLASS_DATA.load(classDefiners, AvailableClassDefiner.LOOKUP_HIDDEN_CLASS_DATA);
 		}
