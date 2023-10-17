@@ -105,13 +105,19 @@ public final class StaticInitializerBridge {
 			if (registration == null) {
 				throw new IllegalStateException("No spec is registered");
 			} else if (registration.comparatorClass != caller.lookupClass()) {
-				throw new IllegalArgumentException("Caller provided an unexpected class: " + caller.lookupClass());
+				throw new IllegalArgumentException("Caller provided an unexpected Lookup class: " + caller.lookupClass());
+			} else if (lacksAccess(caller)) {
+				throw new IllegalArgumentException("Caller Lookup must have PRIVATE access");
 			}
 
 			return expectedSpecClass.cast(registration.spec);
 		} finally {
 			THREAD_LOCAL.remove();
 		}
+	}
+
+	private static boolean lacksAccess(Lookup caller) {
+		return (caller.lookupModes() & Lookup.PRIVATE) != Lookup.PRIVATE;
 	}
 
 	private static final class Registration<T> {
